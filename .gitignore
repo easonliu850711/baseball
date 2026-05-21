@@ -1,0 +1,109 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+Thumbs.db
+*.pem
+*.key
+*.crt
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# local env files
+.env
+.env.local
+.env.production
+.env.development
+.env*.local
+.env.local.secret
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+
+# next generated
+next-env.d.ts
+
+# IDE
+.vscode/
+.vscode-test
+.idea/
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# cache
+.npm
+.eslintcache
+.stylelintcache
+.cache
+.parcel-cache
+.turbo/
+
+# build caches
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# REPL
+.node_repl_history
+
+# package output
+*.tgz
+
+# yarn
+.yarn-integrity
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*u.node
+
+# serverless
+.serverless/
+
+# FuseBox
+.fusebox/
+
+# DynamoDB
+.dynamodb/
+
+# TernJS
+.tern-port
+
+# uploads / temp
+uploads/
+tmp/
+temp/
+
+# backup
+*.bak
+*.backup
+*.old
