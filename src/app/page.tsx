@@ -244,7 +244,7 @@ export default function BaseballHome() {
           transition={{ delay: 0.4 }}
           className="grid grid-cols-2 gap-4 mt-8"
         >
-          <Link href="/觀賽紀錄" className="ocean-card group p-5 rounded-xl border border-ocean-light/20 bg-ocean-mid/20 hover:border-ocean-wave/40 transition-all">
+          <Link href="/games" className="ocean-card group p-5 rounded-xl border border-ocean-light/20 bg-ocean-mid/20 hover:border-ocean-wave/40 transition-all">
             <div className="flex items-center gap-3 mb-2">
               <span className="text-2xl">📖</span>
               <h3 className="font-bold text-shell-white text-sm">棒球觀戰紀錄</h3>
@@ -255,7 +255,7 @@ export default function BaseballHome() {
             </div>
           </Link>
 
-          <Link href="/旅外球員" className="ocean-card group p-5 rounded-xl border border-ocean-light/20 bg-ocean-mid/20 hover:border-ocean-wave/40 transition-all">
+          <Link href="/players" className="ocean-card group p-5 rounded-xl border border-ocean-light/20 bg-ocean-mid/20 hover:border-ocean-wave/40 transition-all">
             <div className="flex items-center gap-3 mb-2">
               <span className="text-2xl">🧢</span>
               <h3 className="font-bold text-shell-white text-sm">旅外球員</h3>
