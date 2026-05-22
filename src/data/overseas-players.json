@@ -388,5 +388,35 @@
     "bats_throws": "L/L",
     "confidence": "high",
     "needs_review": false
+  },
+  {
+    "player_id": "chang-hung-leng",
+    "name_zh": "張弘稜",
+    "name_en": "Hung-Leng Chang",
+    "country": "US",
+    "league": "MiLB",
+    "organization": "Pittsburgh Pirates",
+    "team_name": "Greensboro Grasshoppers",
+    "current_level": "High-A",
+    "roster_status": "Active",
+    "position": "P",
+    "bats_throws": "R/R",
+    "confidence": "medium",
+    "needs_review": true
+  },
+  {
+    "player_id": "ke-ching-hsien",
+    "name_zh": "柯敬賢",
+    "name_en": "Ching-Hsien Ko",
+    "country": "US",
+    "league": "MiLB",
+    "organization": "Los Angeles Dodgers",
+    "team_name": "Rancho Cucamonga Quakes",
+    "current_level": "Low-A",
+    "roster_status": "Active",
+    "position": "P",
+    "bats_throws": "R/R",
+    "confidence": "medium",
+    "needs_review": true
   }
 ]
