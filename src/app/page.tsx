@@ -93,35 +93,10 @@ async function fetchMLB(): Promise<LeagueBlock[]> {
 }
 
 async function fetchKBO(): Promise<{ league: string; icon: string; teams: any[] }> {
-  const res = await fetch('https://eng.koreabaseball.com/Standings/TeamStandings.aspx', {
-    headers: { 'User-Agent': 'Mozilla/5.0' }
-  })
-  const html = await res.text()
-
-  // Extract team standings rows
-  const rows = html.match(/<tr[^>]*>[\s\S]*?<\/tr>/g) || []
-  const teams: any[] = []
-
-  for (const row of rows) {
-    const cells = row.match(/<td[^>]*>([\s\S]*?)<\/td>/g)
-    if (!cells || cells.length < 9) continue
-
-    const clean = cells.map((c: string) => c.replace(/<[^>]+>/g, '').trim())
-    const rank = parseInt(clean[0])
-    if (isNaN(rank) || rank < 1 || rank > 10) continue
-
-    const name = clean[1]
-    const g = parseInt(clean[2]) || 0
-    const w = parseInt(clean[3]) || 0
-    const l = parseInt(clean[4]) || 0
-    const d = parseInt(clean[5]) || 0
-    const pct = clean[6]
-    const gb = clean[7] === '0.0' ? '-' : clean[7]
-
-    teams.push({ rank, name, g, w, l, d, pct, gb: gb, color: KBO_COLORS[name?.toUpperCase()] || 'text-gray-400' })
-  }
-
-  return { league: 'KBO 聯賽', icon: '🇰🇷', teams }
+  // Proxy through our own API route (avoids CORS and runs on server)
+  const res = await fetch('/api/kbo')
+  if (!res.ok) throw new Error('KBO fetch failed: ' + res.status)
+  return res.json()
 }
 
 // ============================================================
