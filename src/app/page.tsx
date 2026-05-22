@@ -209,21 +209,7 @@ export default function BaseballHome() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-ocean-abyss via-ocean-deep to-ocean-abyss py-16 px-4">
       <div className="max-w-6xl mx-auto">
-        {/* ===== 🌸 導流到 Nosae 小空間 ===== */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-6"
-        >
-          <Link
-            href="https://nosae.studio-imori.com"
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-pink-500/10 border border-pink-400/20 text-pink-300 text-xs hover:bg-pink-500/20 hover:border-pink-400/30 transition-all duration-300"
-          >
-            🌸 回到乃彩絵的小空間
-            <ExternalLink className="w-3 h-3" />
-          </Link>
-        </motion.div>
+
 
         {/* ===== 英雄區 ===== */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-center mb-8">
