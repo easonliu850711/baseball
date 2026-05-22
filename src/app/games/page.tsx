@@ -44,7 +44,7 @@ export default function WatchRecords() {
   const progressPercent = Math.round((totalBought / totalGames) * 100)
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-ocean-abyss to-ocean-deep py-16 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-ocean-abyss to-ocean-deep py-8 px-4">
       <div className="max-w-7xl mx-auto">
         {/* ===== 🔙 回主頁 ===== */}
         <Link href="/" className="inline-flex items-center gap-2 text-stone-gray hover:text-shell-white transition-colors mb-8 text-sm">

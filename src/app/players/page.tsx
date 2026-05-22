@@ -114,7 +114,7 @@ export default function OverseasPlayers() {
   if (!mounted) return null
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-ocean-abyss via-ocean-deep to-ocean-abyss py-16 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-ocean-abyss via-ocean-deep to-ocean-abyss py-8 px-4">
       <div className="max-w-6xl mx-auto">
         {/* ===== 🔙 回主頁 ===== */}
         <Link href="/" className="inline-flex items-center gap-2 text-stone-gray hover:text-shell-white transition-colors mb-8 text-sm">

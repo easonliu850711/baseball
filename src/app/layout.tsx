@@ -1,15 +1,19 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import NavBar from '@/components/NavBar'
 
 export const metadata: Metadata = {
-  title: '⚾ Studio Imori 球場巡禮 — 14 場制霸',
-  description: 'NPB 14 場球場巡禮全進度追蹤・已購 7 張・預算管理・制霸儀表板',
+  title: '⚾ 世界野球戰績站',
+  description: 'NPB·MLB·CPBL·KBO 四國排行榜・旅外球員追蹤',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="zh-TW">
-      <body>{children}</body>
+      <body>
+        <NavBar />
+        {children}
+      </body>
     </html>
   )
 }

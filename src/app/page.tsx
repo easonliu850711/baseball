@@ -207,7 +207,7 @@ export default function BaseballHome() {
   )
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-ocean-abyss via-ocean-deep to-ocean-abyss py-16 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-ocean-abyss via-ocean-deep to-ocean-abyss py-8 px-4">
       <div className="max-w-6xl mx-auto">
 
 
