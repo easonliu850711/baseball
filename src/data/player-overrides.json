@@ -1,0 +1,8 @@
+{
+  "meta": {
+    "last_updated": "2026-05-22",
+    "description": "手動覆寫表 — 優先於自動爬取結果。JSON key 為 player_id。"
+  },
+  "overrides": {
+  }
+}
