@@ -9,24 +9,24 @@ import Link from 'next/link'
 // 📊 2026 賽季真實戰績數據（2026-05-22 更新）
 // ============================================================
 
-// 🏔️ セ・リーグ（Yahoo Sports 5/22）
+// 🏔️ 央聯 セ・リーグ（Yahoo Sports 5/22）
 const NPB_CENTRAL = [
-  { rank: 1, name: 'ヤクルト', g: 44, w: 27, l: 17, d: 0, pct: '.614', gb: '-', color: 'text-green-400', stadium: '神宮球場' },
+  { rank: 1, name: '養樂多', g: 44, w: 27, l: 17, d: 0, pct: '.614', gb: '-', color: 'text-green-400', stadium: '神宮球場' },
   { rank: 2, name: '阪神',    g: 43, w: 25, l: 17, d: 1, pct: '.595', gb: '1.0', color: 'text-yellow-400', stadium: '甲子園' },
-  { rank: 3, name: '巨人',    g: 43, w: 24, l: 19, d: 0, pct: '.558', gb: '2.5', color: 'text-orange-500', stadium: '東京ドーム' },
-  { rank: 4, name: 'DeNA',    g: 44, w: 20, l: 22, d: 2, pct: '.476', gb: '6.0', color: 'text-blue-400', stadium: '横浜スタジアム' },
-  { rank: 5, name: '広島',    g: 41, w: 16, l: 23, d: 2, pct: '.410', gb: '8.5', color: 'text-red-500', stadium: 'マツダスタジアム' },
-  { rank: 6, name: '中日',    g: 43, w: 14, l: 28, d: 1, pct: '.333', gb: '12.0', color: 'text-blue-600', stadium: 'バンテリンドーム' },
+  { rank: 3, name: '巨人',    g: 43, w: 24, l: 19, d: 0, pct: '.558', gb: '2.5', color: 'text-orange-500', stadium: '東京巨蛋' },
+  { rank: 4, name: 'DeNA',    g: 44, w: 20, l: 22, d: 2, pct: '.476', gb: '6.0', color: 'text-blue-400', stadium: '橫濱球場' },
+  { rank: 5, name: '廣島',    g: 41, w: 16, l: 23, d: 2, pct: '.410', gb: '8.5', color: 'text-red-500', stadium: '馬自達球場' },
+  { rank: 6, name: '中日',    g: 43, w: 14, l: 28, d: 1, pct: '.333', gb: '12.0', color: 'text-blue-600', stadium: '名古屋巨蛋' },
 ]
 
-// 🌊 パ・リーグ
+// 🌊 洋聯 パ・リーグ
 const NPB_PACIFIC = [
-  { rank: 1, name: 'オリックス', g: 43, w: 25, l: 18, d: 0, pct: '.581', gb: '-', color: 'text-amber-500', stadium: '京セラドーム' },
-  { rank: 2, name: '西武',      g: 45, w: 25, l: 19, d: 1, pct: '.568', gb: '0.5', color: 'text-emerald-400', stadium: 'ベルーナドーム' },
-  { rank: 3, name: '日本ハム',   g: 46, w: 23, l: 23, d: 0, pct: '.500', gb: '3.5', color: 'text-sky-400', stadium: 'ES CON FIELD' },
-  { rank: 4, name: 'ソフトバンク', g: 42, w: 20, l: 22, d: 0, pct: '.476', gb: '4.5', color: 'text-yellow-400', stadium: 'PayPayドーム' },
-  { rank: 5, name: 'ロッテ',     g: 43, w: 19, l: 24, d: 0, pct: '.442', gb: '6.0', color: 'text-black', stadium: 'ZOZOマリン' },
-  { rank: 6, name: '楽天',      g: 43, w: 18, l: 24, d: 1, pct: '.429', gb: '6.5', color: 'text-red-400', stadium: '楽天モバイル' },
+  { rank: 1, name: '歐力士', g: 43, w: 25, l: 18, d: 0, pct: '.581', gb: '-', color: 'text-amber-500', stadium: '京瓷巨蛋' },
+  { rank: 2, name: '西武',      g: 45, w: 25, l: 19, d: 1, pct: '.568', gb: '0.5', color: 'text-emerald-400', stadium: '西武巨蛋' },
+  { rank: 3, name: '火腿',   g: 46, w: 23, l: 23, d: 0, pct: '.500', gb: '3.5', color: 'text-sky-400', stadium: 'ES CON FIELD' },
+  { rank: 4, name: '軟銀', g: 42, w: 20, l: 22, d: 0, pct: '.476', gb: '4.5', color: 'text-yellow-400', stadium: 'PayPay巨蛋' },
+  { rank: 5, name: '羅德',     g: 43, w: 19, l: 24, d: 0, pct: '.442', gb: '6.0', color: 'text-black', stadium: 'ZOZO海洋球場' },
+  { rank: 6, name: '樂天',      g: 43, w: 18, l: 24, d: 1, pct: '.429', gb: '6.5', color: 'text-red-400', stadium: '樂天移動通信球場' },
 ]
 
 // 🐉 中華職棒 CPBL（CPBL 官網 5/22）
@@ -43,12 +43,12 @@ const CPBL = [
 // 📡 MLB Division ID → 名稱映射
 // ============================================================
 const MLB_DIVISIONS: Record<number, { league: string; div: string; icon: string }> = {
-  200: { league: 'アメリカン・リーグ', div: '西地区', icon: '🌴' },
-  201: { league: 'アメリカン・リーグ', div: '東地区', icon: '🏙️' },
-  202: { league: 'アメリカン・リーグ', div: '中地区', icon: '🌽' },
-  203: { league: 'ナショナル・リーグ', div: '西地区', icon: '🌵' },
-  204: { league: 'ナショナル・リーグ', div: '東地区', icon: '🗽' },
-  205: { league: 'ナショナル・リーグ', div: '中地区', icon: '🌾' },
+  200: { league: '美聯', div: '西區', icon: '🌴' },
+  201: { league: '美聯', div: '東區', icon: '🏙️' },
+  202: { league: '美聯', div: '中區', icon: '🌽' },
+  203: { league: '國聯', div: '西區', icon: '🌵' },
+  204: { league: '國聯', div: '東區', icon: '🗽' },
+  205: { league: '國聯', div: '中區', icon: '🌾',}
 }
 
 // 🇰🇷 KBO 10 隊顏色（依 eng.koreabaseball.com 排序）
@@ -99,7 +99,7 @@ async function fetchKBO(): Promise<{ league: string; icon: string; teams: any[] 
   const html = await res.text()
 
   // Extract team standings rows
-  const rows = html.match(/<tr[^>]*>[sS]*?<\/tr>/g) || []
+  const rows = html.match(/<tr[^>]*>[\s\S]*?<\/tr>/g) || []
   const teams: any[] = []
 
   for (const row of rows) {
@@ -121,7 +121,7 @@ async function fetchKBO(): Promise<{ league: string; icon: string; teams: any[] 
     teams.push({ rank, name, g, w, l, d, pct, gb: gb, color: KBO_COLORS[name?.toUpperCase()] || 'text-gray-400' })
   }
 
-  return { league: 'KBO 리그', icon: '🇰🇷', teams }
+  return { league: 'KBO 聯賽', icon: '🇰🇷', teams }
 }
 
 // ============================================================
@@ -174,7 +174,7 @@ export default function BaseballHome() {
       <thead>
         <tr className="border-b border-ocean-light/20 text-stone-gray text-[11px] uppercase tracking-wider">
           <th className="text-left py-2 pr-2 w-8">#</th>
-          <th className="text-left py-2 pr-3">球団</th>
+          <th className="text-left py-2 pr-3">球隊</th>
           <th className="text-center py-2 pr-2 w-10">試</th>
           <th className="text-center py-2 pr-2 w-8">勝</th>
           <th className="text-center py-2 pr-2 w-8">敗</th>
@@ -217,9 +217,9 @@ export default function BaseballHome() {
             <Trophy className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-2">
-            <span className="text-gradient">⚾ 世界野球戦績</span>
+            <span className="text-gradient">⚾ 世界棒球戰績</span>
           </h1>
-          <p className="text-stone-gray/70 text-sm max-w-xl mx-auto">NPB · CPBL · MLB · KBO リアルタイム順位表</p>
+          <p className="text-stone-gray/70 text-sm max-w-xl mx-auto">NPB · CPBL · MLB · KBO 即時排行榜</p>
         </motion.div>
 
         <div className="flex items-center justify-center gap-2 mb-8">
@@ -239,7 +239,7 @@ export default function BaseballHome() {
         {/* ===== 資料來源 ===== */}
         <div className="text-center mb-6">
           <span className="text-[10px] text-stone-gray/40">
-            データソース: {activeTab === 0 ? 'Yahoo Sports' : activeTab === 1 ? 'CPBL 官網' : activeTab === 2 ? 'MLB API' : activeTab === 3 ? 'KBO 公式' : '-'} · {new Date().toLocaleDateString('ja-JP')} 更新
+            資料來源: {activeTab === 0 ? 'Yahoo Sports' : activeTab === 1 ? 'CPBL 官網' : activeTab === 2 ? 'MLB API' : activeTab === 3 ? 'KBO 官方' : '-'} · {new Date().toLocaleDateString('zh-TW')} 更新
           </span>
         </div>
 
@@ -248,15 +248,15 @@ export default function BaseballHome() {
           <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
             {/* 🇯🇵 NPB */}
             {activeTab === 0 && [{
-              league: 'セ・リーグ', icon: '🏔️', teams: NPB_CENTRAL
+              league: '央聯 セ・リーグ', icon: '🏔️', teams: NPB_CENTRAL
             }, {
-              league: 'パ・リーグ', icon: '🌊', teams: NPB_PACIFIC
+              league: '洋聯 パ・リーグ', icon: '🌊', teams: NPB_PACIFIC
             }].map(lg => (
               <div key={lg.league} className="ocean-card rounded-xl border border-ocean-light/20 bg-ocean-mid/20 p-5 mb-4">
                 <div className="flex items-center gap-2 mb-4">
                   <span className="text-lg">{lg.icon}</span>
                   <h3 className="font-bold text-ocean-foam text-sm">{lg.league}</h3>
-                  <span className="text-[10px] text-stone-gray/40 ml-auto">{lg.teams.length} 球団 · 2026</span>
+                  <span className="text-[10px] text-stone-gray/40 ml-auto">{lg.teams.length} 隊 · 2026</span>
                 </div>
                 <div className="overflow-x-auto">{renderStandingsTable(lg.teams)}</div>
               </div>
@@ -268,7 +268,7 @@ export default function BaseballHome() {
                 <div className="flex items-center gap-2 mb-4">
                   <span className="text-lg">🐉</span>
                   <h3 className="font-bold text-ocean-foam text-sm">中華職棒</h3>
-                  <span className="text-[10px] text-stone-gray/40 ml-auto">{CPBL.length} 球団 · 2026</span>
+                  <span className="text-[10px] text-stone-gray/40 ml-auto">{CPBL.length} 隊 · 2026</span>
                 </div>
                 <div className="overflow-x-auto">{renderStandingsTable(CPBL)}</div>
               </div>
@@ -279,7 +279,7 @@ export default function BaseballHome() {
               loading ? (
                 <div className="text-center py-12">
                   <RefreshCw className="w-6 h-6 text-ocean-wave/60 animate-spin mx-auto mb-3" />
-                  <p className="text-stone-gray/50 text-sm">MLB データ取得中...</p>
+                  <p className="text-stone-gray/50 text-sm">MLB 資料載入中...</p>
                 </div>
               ) : mlbData ? (
                 mlbData.map((block, i) => (
@@ -287,15 +287,15 @@ export default function BaseballHome() {
                     <div className="flex items-center gap-2 mb-4">
                       <span className="text-lg">{block.meta.icon}</span>
                       <h3 className="font-bold text-ocean-foam text-sm">{block.meta.league} · {block.meta.div}</h3>
-                      <span className="text-[10px] text-stone-gray/40 ml-auto">{block.teams.length} 球団</span>
+                      <span className="text-[10px] text-stone-gray/40 ml-auto">{block.teams.length} 隊</span>
                     </div>
                     <div className="overflow-x-auto">{renderStandingsTable(block.teams, true)}</div>
                   </div>
                 ))
               ) : (
                 <div className="text-center py-12">
-                  <p className="text-stone-gray/50 text-sm">データの取得に失敗しました。リロードしてください。</p>
-                  <button onClick={() => fetchLiveData(2)} className="mt-3 text-xs text-ocean-wave/60 hover:text-ocean-wave underline">再試行</button>
+                  <p className="text-stone-gray/50 text-sm">資料取得失敗，請重新整理。</p>
+                  <button onClick={() => fetchLiveData(2)} className="mt-3 text-xs text-ocean-wave/60 hover:text-ocean-wave underline">重新整理</button>
                 </div>
               )
             )}
@@ -305,21 +305,21 @@ export default function BaseballHome() {
               loading ? (
                 <div className="text-center py-12">
                   <RefreshCw className="w-6 h-6 text-ocean-wave/60 animate-spin mx-auto mb-3" />
-                  <p className="text-stone-gray/50 text-sm">KBO データ取得中...</p>
+                  <p className="text-stone-gray/50 text-sm">KBO 資料載入中...</p>
                 </div>
               ) : kboData ? (
                 <div className="ocean-card rounded-xl border border-ocean-light/20 bg-ocean-mid/20 p-5 mb-4">
                   <div className="flex items-center gap-2 mb-4">
                     <span className="text-lg">{kboData.icon}</span>
                     <h3 className="font-bold text-ocean-foam text-sm">{kboData.league}</h3>
-                    <span className="text-[10px] text-stone-gray/40 ml-auto">{kboData.teams.length} 球団 · 2026</span>
+                    <span className="text-[10px] text-stone-gray/40 ml-auto">{kboData.teams.length} 隊 · 2026</span>
                   </div>
                   <div className="overflow-x-auto">{renderStandingsTable(kboData.teams)}</div>
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <p className="text-stone-gray/50 text-sm">データの取得に失敗しました。リロードしてください。</p>
-                  <button onClick={() => fetchLiveData(3)} className="mt-3 text-xs text-ocean-wave/60 hover:text-ocean-wave underline">再試行</button>
+                  <p className="text-stone-gray/50 text-sm">KBO 資料取得失敗，請重新整理。</p>
+                  <button onClick={() => fetchLiveData(3)} className="mt-3 text-xs text-ocean-wave/60 hover:text-ocean-wave underline">重新整理</button>
                 </div>
               )
             )}
