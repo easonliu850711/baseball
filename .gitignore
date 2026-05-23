@@ -107,3 +107,7 @@ temp/
 *.bak
 *.backup
 *.old
+# Database files (auto-generated)
+data/*.db
+data/*.db-wal
+data/*.db-shm
