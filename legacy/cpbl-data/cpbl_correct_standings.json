@@ -1,0 +1,65 @@
+{
+  "timestamp": "2026-05-18T23:31:03.380637",
+  "teams": [
+    {
+      "rank": "1",
+      "team_name": "味全龍",
+      "games_played": "34",
+      "wins": "21",
+      "losses": "13",
+      "ties": "0",
+      "win_percentage": "0.618",
+      "games_behind": "-"
+    },
+    {
+      "rank": "2",
+      "team_name": "富邦悍將",
+      "games_played": "32",
+      "wins": "18",
+      "losses": "14",
+      "ties": "0",
+      "win_percentage": "0.563",
+      "games_behind": "2"
+    },
+    {
+      "rank": "3",
+      "team_name": "統一7-ELEVEn獅",
+      "games_played": "34",
+      "wins": "18",
+      "losses": "15",
+      "ties": "1",
+      "win_percentage": "0.545",
+      "games_behind": "2.5"
+    },
+    {
+      "rank": "4",
+      "team_name": "台鋼雄鷹",
+      "games_played": "35",
+      "wins": "18",
+      "losses": "16",
+      "ties": "1",
+      "win_percentage": "0.529",
+      "games_behind": "3"
+    },
+    {
+      "rank": "5",
+      "team_name": "樂天桃猿",
+      "games_played": "33",
+      "wins": "13",
+      "losses": "19",
+      "ties": "1",
+      "win_percentage": "0.406",
+      "games_behind": "7"
+    },
+    {
+      "rank": "6",
+      "team_name": "中信兄弟",
+      "games_played": "34",
+      "wins": "11",
+      "losses": "22",
+      "ties": "1",
+      "win_percentage": "0.333",
+      "games_behind": "9.5"
+    }
+  ]
+}

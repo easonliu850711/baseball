@@ -1,0 +1,80 @@
+{
+  "timestamp": "2026-05-22T23:30:30.793995",
+  "status": "success",
+  "data_available": true,
+  "last_updated": "2026-05-22 23:30:30",
+  "standings": {
+    "timestamp": "2026-05-22T23:30:30.794175",
+    "source_url": "https://www.cpbl.com.tw/standings/season",
+    "date": "2026-05-22",
+    "teams": [
+      {
+        "rank": "1",
+        "team_name": "味全龍",
+        "games_played": "37",
+        "wins": "24",
+        "losses": "13",
+        "ties": "0",
+        "win_percentage": "0.649",
+        "games_behind": "-",
+        "win_percentage_clean": "0.649"
+      },
+      {
+        "rank": "2",
+        "team_name": "富邦悍將",
+        "games_played": "35",
+        "wins": "20",
+        "losses": "15",
+        "ties": "0",
+        "win_percentage": "0.571",
+        "games_behind": "3",
+        "win_percentage_clean": "0.571"
+      },
+      {
+        "rank": "3",
+        "team_name": "台鋼雄鷹",
+        "games_played": "38",
+        "wins": "19",
+        "losses": "18",
+        "ties": "1",
+        "win_percentage": "0.514",
+        "games_behind": "5",
+        "win_percentage_clean": "0.514"
+      },
+      {
+        "rank": "4",
+        "team_name": "統一7-ELEVEn獅",
+        "games_played": "37",
+        "wins": "18",
+        "losses": "18",
+        "ties": "1",
+        "win_percentage": "0.5",
+        "games_behind": "5.5",
+        "win_percentage_clean": "0.5"
+      },
+      {
+        "rank": "5",
+        "team_name": "樂天桃猿",
+        "games_played": "35",
+        "wins": "15",
+        "losses": "19",
+        "ties": "1",
+        "win_percentage": "0.441",
+        "games_behind": "7.5",
+        "win_percentage_clean": "0.441"
+      },
+      {
+        "rank": "6",
+        "team_name": "中信兄弟",
+        "games_played": "36",
+        "wins": "11",
+        "losses": "24",
+        "ties": "1",
+        "win_percentage": "0.314",
+        "games_behind": "12",
+        "win_percentage_clean": "0.314"
+      }
+    ]
+  },
+  "note": "CPBL戰績數據（正確解析版 - 更新提取方法）"
+}

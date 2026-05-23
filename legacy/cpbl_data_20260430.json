@@ -1,0 +1,74 @@
+{
+  "timestamp": "2026-04-30T23:30:55.111868",
+  "status": "success",
+  "data_available": true,
+  "last_updated": "2026-04-30 23:30:55",
+  "standings": {
+    "timestamp": "2026-04-30T23:30:55.112633",
+    "source_url": "https://www.cpbl.com.tw/standings/season",
+    "date": "2026-04-30",
+    "teams": [
+      {
+        "rank": "1",
+        "team_name": "味全龍",
+        "games_played": "21",
+        "wins": "14",
+        "losses": "7",
+        "ties": "0",
+        "win_percentage": "0.667",
+        "games_behind": "-"
+      },
+      {
+        "rank": "2",
+        "team_name": "台鋼雄鷹",
+        "games_played": "23",
+        "wins": "12",
+        "losses": "10",
+        "ties": "1",
+        "win_percentage": "0.545",
+        "games_behind": "2.5"
+      },
+      {
+        "rank": "3",
+        "team_name": "富邦悍將",
+        "games_played": "20",
+        "wins": "10",
+        "losses": "10",
+        "ties": "0",
+        "win_percentage": "0.5",
+        "games_behind": "3.5"
+      },
+      {
+        "rank": "3",
+        "team_name": "樂天桃猿",
+        "games_played": "21",
+        "wins": "10",
+        "losses": "10",
+        "ties": "1",
+        "win_percentage": "0.5",
+        "games_behind": "3.5"
+      },
+      {
+        "rank": "5",
+        "team_name": "統一7-ELEVEn獅",
+        "games_played": "22",
+        "wins": "10",
+        "losses": "11",
+        "ties": "1",
+        "win_percentage": "0.476",
+        "games_behind": "4"
+      },
+      {
+        "rank": "6",
+        "team_name": "中信兄弟",
+        "games_played": "21",
+        "wins": "6",
+        "losses": "14",
+        "ties": "1",
+        "win_percentage": "0.3",
+        "games_behind": "7.5"
+      }
+    ]
+  },
+  "note": "CPBL戰績數據（正確解析版 - 更新提取方法）"
+}

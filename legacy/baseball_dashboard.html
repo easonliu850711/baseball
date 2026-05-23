@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚾️ 三國棒球看板 | CPBL 即時戰績</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 自定義樣式 */
+        :root {
+            --brothers-yellow: #FFD700;
+            --brothers-black: #000000;
+            --lions-orange: #FF6600;
+            --lions-green: #006600;
+            --monkeys-red: #CC0000;
+            --monkeys-blue: #0000CC;
+            --guardians-blue: #003366;
+            --guardians-red: #CC0000;
+            --dragons-red: #CC0000;
+            --dragons-white: #FFFFFF;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        .team-brothers {
+            border-left: 4px solid var(--brothers-yellow);
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.3) 0%, rgba(255, 215, 0, 0.1) 100%);
+        }
+
+        .team-lions {
+            border-left: 4px solid var(--lions-orange);
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.3) 0%, rgba(255, 102, 0, 0.1) 100%);
+        }
+
+        .team-monkeys {
+            border-left: 4px solid var(--monkeys-red);
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.3) 0%, rgba(204, 0, 0, 0.1) 100%);
+        }
+
+        .team-guardians {
+            border-left: 4px solid var(--guardians-blue);
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 51, 102, 0.1) 100%);
+        }
+
+        .team-dragons {
+            border-left: 4px solid var(--dragons-red);
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.3) 0%, rgba(204, 0, 0, 0.1) 100%);
+        }
+
+        .rank-1 {
+            background: linear-gradient(90deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 215, 0, 0.05) 100%);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .rank-2 {
+            background: linear-gradient(90deg, rgba(192, 192, 192, 0.2) 0%, rgba(192, 192, 192, 0.05) 100%);
+            border: 1px solid rgba(192, 192, 192, 0.3);
+        }
+
+        .rank-3 {
+            background: linear-gradient(90deg, rgba(205, 127, 50, 0.2) 0%, rgba(205, 127, 50, 0.05) 100%);
+            border: 1px solid rgba(205, 127, 50, 0.3);
+        }
+
+        .loading-pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .last-updated {
+            font-size: 0.75rem;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+
+<body class="text-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <header class="mb-8 text-center">
+            <h1 class="text-4xl font-bold mb-2">
+                ⚾️ 三國棒球即時看板
+            </h1>
+            <p class="text-gray-400">CPBL 中華職棒即時戰績系統</p>
+            <div class="mt-4 flex justify-center space-x-4">
+                <span class="px-3 py-1 bg-blue-900 rounded-full text-sm">CPBL 台灣</span>
+                <span class="px-3 py-1 bg-gray-700 rounded-full text-sm">NPB 日本</span>
+                <span class="px-3 py-1 bg-red-900 rounded-full text-sm">MLB 美國</span>
+            </div>
+        </header>
+
+        <div class="mb-6 p-4 bg-gray-800 rounded-lg flex justify-between items-center">
+            <div>
+                <span class="text-green-400">●</span>
+                <span class="ml-2">數據來源: CPBL 官網</span>
+            </div>
+            <div id="lastUpdated" class="last-updated">
+                最後更新: 載入中...
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2">
+                <div class="bg-gray-900 rounded-xl p-6 shadow-2xl">
+                    <h2 class="text-2xl font-bold mb-6 flex items-center">
+                        <span class="text-yellow-400 mr-2">🏆</span>
+                        CPBL 戰績排名
+                    </h2>
+
+                    <div id="loading" class="mb-6 p-4 bg-gray-800 rounded-lg loading-pulse">
+                        <div class="flex items-center">
+                            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-yellow-400 mr-3"></div>
+                            <span>正在載入最新戰績數據...</span>
+                        </div>
+                    </div>
+
+                    <div id="standingsTable" class="overflow-x-auto">
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-gray-700 text-sm text-gray-400">
+                        <p>📊 數據每30分鐘自動更新 | 來源: CPBL 官網戰績頁面</p>
+                        <p>🎨 球隊顏色代表各隊主視覺色彩</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="bg-gray-900 rounded-xl p-6 shadow-2xl">
+                    <h2 class="text-2xl font-bold mb-4 flex items-center">
+                        <span class="text-red-400 mr-2">🇯🇵</span>
+                        NPB 日本職棒
+                    </h2>
+                    <div class="text-center py-8">
+                        <div class="text-5xl mb-4">🔜</div>
+                        <p class="text-gray-400">開發中</p>
+                        <p class="text-sm text-gray-500 mt-2">即將整合 NPB 戰績數據</p>
+                    </div>
+                </div>
+
+                <div class="bg-gray-900 rounded-xl p-6 shadow-2xl">
+                    <h2 class="text-2xl font-bold mb-4 flex items-center">
+                        <span class="text-blue-400 mr-2">🇺🇸</span>
+                        MLB 美國職棒
+                    </h2>
+                    <div class="text-center py-8">
+                        <div class="text-5xl mb-4">🔜</div>
+                        <p class="text-gray-400">開發中</p>
+                        <p class="text-sm text-gray-500 mt-2">即將整合 MLB 戰績數據</p>
+                    </div>
+                </div>
+
+                <div class="bg-gray-900 rounded-xl p-6 shadow-2xl">
+                    <h2 class="text-2xl font-bold mb-4 flex items-center">
+                        <span class="text-green-400 mr-2">📅</span>
+                        今日賽況
+                    </h2>
+                    <div class="text-center py-8">
+                        <div class="text-5xl mb-4">⏳</div>
+                        <p class="text-gray-400">賽程解析開發中</p>
+                        <p class="text-sm text-gray-500 mt-2">即將顯示今日比賽與即時比分</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="mt-8 pt-6 border-t border-gray-800 text-center text-gray-500 text-sm">
+            <p>⚡ 由 Nosae (乃彩絵) 開發 | Studio Imori 創意技術實驗室</p>
+            <p class="mt-1">📅 數據更新時間: 每日自動執行 | 🎯 目標: 三國棒球數據整合</p>
+        </footer>
+    </div>
+
+    <script>
+        // 數據 API 端點
+        const DATA_API_URL = 'http://api.studio-imori.com/nosae/eason-lab/baseball-data/cpbl_final_data.json';
+        const DATA_BACKUP_URL = 'http://100.105.195.37/nosae/eason-lab/baseball-data/cpbl_final_data.json';
+
+        // 球隊顏色映射
+        const teamColors = {
+            '中信兄弟': 'team-brothers',
+            '統一7-ELEVEn獅': 'team-lions',
+            '樂天桃猿': 'team-monkeys',
+            '富邦悍將': 'team-guardians',
+            '味全龍': 'team-dragons'
+        };
+
+        // 球隊圖示映射
+        const teamIcons = {
+            '中信兄弟': '🐯',
+            '統一7-ELEVEn獅': '🦁',
+            '樂天桃猿': '🐵',
+            '富邦悍將': '🛡️',
+            '味全龍': '🐉'
+        };
+
+        // 載入數據（帶備援機制）
+        async function loadData() {
+            // 🌟 修正：優先讀取本地相對路徑，確保 Mac 本地端 Live Server 正常運作
+            const urls = [
+                'cpbl_final_data.json',
+                DATA_API_URL,
+                DATA_BACKUP_URL
+            ];
+            let lastError = null;
+
+            for (let i = 0; i < urls.length; i++) {
+                try {
+                    console.log(`嘗試從 ${urls[i]} 載入數據...`);
+                    const response = await fetch(urls[i]);
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+
+                    // 隱藏載入動畫
+                    document.getElementById('loading').style.display = 'none';
+
+                    // 更新最後更新時間
+                    if (data.last_updated) {
+                        document.getElementById('lastUpdated').textContent =
+                            `最後更新: ${data.last_updated}`;
+                    }
+
+                    // 渲染戰績表格
+                    if (data.standings && data.standings.teams) {
+                        renderStandings(data.standings.teams);
+                        console.log(`✓ 成功從 ${urls[i]} 載入數據`);
+                        return; // 成功，退出函數
+                    } else {
+                        throw new Error('戰績數據格式錯誤');
+                    }
+
+                } catch (error) {
+                    console.error(`從 ${urls[i]} 載入失敗:`, error);
+                    lastError = error;
+
+                    // 如果不是最後一個 URL，繼續嘗試下一個
+                    if (i < urls.length - 1) {
+                        console.log('嘗試下一個數據源...');
+                        continue;
+                    }
+                }
+            }
+
+            // 所有 URL 都失敗
+            console.error('所有數據源都失敗:', lastError);
+            showError(`載入失敗: ${lastError.message}`);
+        }
+
+        // 渲染戰績表格
+        function renderStandings(teams) {
+            const container = document.getElementById('standingsTable');
+
+            // 排序：按排名
+            teams.sort((a, b) => parseInt(a.rank) - parseInt(b.rank));
+
+            let html = `
+                <table class="w-full">
+                    <thead>
+                        <tr class="text-gray-400 border-b border-gray-700">
+                            <th class="text-left py-3 px-4">排名</th>
+                            <th class="text-left py-3 px-4">球隊</th>
+                            <th class="text-left py-3 px-4">出賽</th>
+                            <th class="text-left py-3 px-4">勝-敗-和</th>
+                            <th class="text-left py-3 px-4">勝率</th>
+                            <th class="text-left py-3 px-4">勝差</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            teams.forEach(team => {
+                const rankClass = `rank-${team.rank}`;
+                const teamClass = teamColors[team.team_name] || '';
+                const teamIcon = teamIcons[team.team_name] || '⚾';
+
+                // 計算勝率顏色
+                const winRate = parseFloat(team.win_percentage);
+                let winRateColor = 'text-gray-300';
+                if (winRate >= 0.600) winRateColor = 'text-green-400';
+                else if (winRate >= 0.500) winRateColor = 'text-yellow-400';
+                else if (winRate >= 0.400) winRateColor = 'text-orange-400';
+                else winRateColor = 'text-red-400';
+
+                html += `
+                    <tr class="border-b border-gray-800 hover:bg-gray-800 transition-colors ${rankClass} ${teamClass}">
+                        <td class="py-4 px-4">
+                            <div class="flex items-center">
+                                <span class="text-xl font-bold mr-2">${team.rank}</span>
+                                ${team.rank === '1' ? '👑' : ''}
+                            </div>
+                        </td>
+                        <td class="py-4 px-4">
+                            <div class="flex items-center">
+                                <span class="text-2xl mr-3">${teamIcon}</span>
+                                <div>
+                                    <div class="font-semibold">${team.team_name}</div>
+                                    <div class="text-xs text-gray-400">${getTeamFullName(team.team_name)}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-4 px-4 font-mono">${team.games_played}</td>
+                        <td class="py-4 px-4">
+                            <div class="font-mono">${team.wins}-${team.losses}-${team.ties}</div>
+                            <div class="text-xs text-gray-400">${getWinLossBar(team.wins, team.losses, team.ties)}</div>
+                        </td>
+                        <td class="py-4 px-4">
+                            <div class="${winRateColor} font-bold">${team.win_percentage}</div>
+                        </td>
+                        <td class="py-4 px-4">
+                            <div class="font-mono ${team.games_behind === '-' ? 'text-yellow-400' : 'text-gray-300'}">
+                                ${team.games_behind}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // 獲取球隊全名
+        function getTeamFullName(shortName) {
+            const fullNames = {
+                '中信兄弟': 'CTBC Brothers',
+                '統一7-ELEVEn獅': 'Uni-President 7-Eleven Lions',
+                '樂天桃猿': 'Rakuten Monkeys',
+                '富邦悍將': 'Fubon Guardians',
+                '味全龍': 'Wei Chuan Dragons'
+            };
+            return fullNames[shortName] || shortName;
+        }
+
+        // 生成勝敗條形圖
+        function getWinLossBar(wins, losses, ties) {
+            const total = parseInt(wins) + parseInt(losses) + parseInt(ties);
+            if (total === 0) return '';
+
+            const winPercent = (parseInt(wins) / total) * 100;
+            const lossPercent = (parseInt(losses) / total) * 100;
+            const tiePercent = (parseInt(ties) / total) * 100;
+
+            return `
+                <div class="flex h-2 rounded-full overflow-hidden mt-1">
+                    <div class="bg-green-500" style="width: ${winPercent}%"></div>
+                    <div class="bg-gray-500" style="width: ${tiePercent}%"></div>
+                    <div class="bg-red-500" style="width: ${lossPercent}%"></div>
+                </div>
+            `;
+        }
+
+        // 顯示錯誤訊息
+        function showError(message) {
+            const container = document.getElementById('standingsTable');
+            container.innerHTML = `
+                <div class="bg-red-900/30 border border-red-700 rounded-lg p-6 text-center">
+                    <div class="text-4xl mb-4">❌</div>
+                    <h3 class="text-xl font-bold mb-2">數據載入失敗</h3>
+                    <p class="text-gray-300 mb-4">${message}</p>
+                    <button onclick="loadData()" class="px-4 py-2 bg-red-700 hover:bg-red-600 rounded-lg transition-colors">
+                        重新載入
+                    </button>
+                </div>
+            `;
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        // 頁面載入時執行
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+
+            // 每5分鐘自動更新數據
+            setInterval(loadData, 5 * 60 * 1000);
+        });
+    </script>
+</body>
+
+</html>

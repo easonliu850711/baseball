@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚾️ 三國棒球看板 | CPBL 即時戰績 (本地版)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 自定義樣式 */
+        :root {
+            --brothers-yellow: #FFD700;
+            --brothers-black: #000000;
+            --lions-orange: #FF6600;
+            --lions-green: #006600;
+            --monkeys-red: #CC0000;
+            --monkeys-blue: #0000CC;
+            --guardians-blue: #003366;
+            --guardians-red: #CC0000;
+            --dragons-red: #CC0000;
+            --dragons-white: #FFFFFF;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        .team-brothers {
+            border-left: 4px solid var(--brothers-yellow);
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.3) 0%, rgba(255, 215, 0, 0.1) 100%);
+        }
+
+        .team-lions {
+            border-left: 4px solid var(--lions-orange);
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.3) 0%, rgba(255, 102, 0, 0.1) 100%);
+        }
+
+        .team-monkeys {
+            border-left: 4px solid var(--monkeys-red);
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.3) 0%, rgba(204, 0, 0, 0.1) 100%);
+        }
+
+        .team-guardians {
+            border-left: 4px solid var(--guardians-blue);
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 51, 102, 0.1) 100%);
+        }
+
+        .team-dragons {
+            border-left: 4px solid var(--dragons-red);
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.3) 0%, rgba(204, 0, 0, 0.1) 100%);
+        }
+
+        .team-eagles {
+            border-left: 4px solid #800080;
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.3) 0%, rgba(128, 0, 128, 0.1) 100%);
+        }
+
+        .card {
+            backdrop-filter: blur(10px);
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .rank-badge {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .rank-1 { background: linear-gradient(135deg, #FFD700, #FFA500); color: #000; }
+        .rank-2 { background: linear-gradient(135deg, #C0C0C0, #A0A0A0); color: #000; }
+        .rank-3 { background: linear-gradient(135deg, #CD7F32, #A0522D); color: #000; }
+        .rank-4 { background: linear-gradient(135deg, #4A5568, #2D3748); color: #fff; }
+        .rank-5 { background: linear-gradient(135deg, #4A5568, #2D3748); color: #fff; }
+        .rank-6 { background: linear-gradient(135deg, #4A5568, #2D3748); color: #fff; }
+
+        .win-rate-bar {
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .win-rate-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1s ease-in-out;
+        }
+
+        .highlight {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 215, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+        }
+    </style>
+</head>
+
+<body class="text-gray-100 p-4 md:p-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- 頁首 -->
+        <header class="mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-bold flex items-center gap-3">
+                        <span class="text-yellow-400">⚾️</span>
+                        <span>三國棒球看板</span>
+                        <span class="text-xl text-gray-400">| CPBL 即時戰績</span>
+                    </h1>
+                    <p class="text-gray-400 mt-2">中華職棒大聯盟 2026年賽季戰績追蹤系統</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="bg-gray-800 px-4 py-2 rounded-lg">
+                        <div class="text-sm text-gray-400">更新時間</div>
+                        <div class="font-mono" id="updateTime">2026-04-14 23:37:15</div>
+                    </div>
+                    <div class="bg-red-500/20 px-4 py-2 rounded-lg border border-red-500/30">
+                        <div class="text-sm text-red-300">⚠️ 本地模式</div>
+                        <div class="text-xs text-red-400">伺服器暫時無法訪問</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- 戰績看板 -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- 戰績排名 -->
+            <div class="lg:col-span-2">
+                <div class="card rounded-xl p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold flex items-center gap-2">
+                            <span class="text-yellow-400">🏆</span>
+                            <span>球隊戰績排名</span>
+                        </h2>
+                        <div class="text-sm text-gray-400">2026年賽季</div>
+                    </div>
+                    
+                    <div class="space-y-4" id="standingsContainer">
+                        <!-- 戰績數據將在這裡動態生成 -->
+                        <div class="text-center py-8 text-gray-500">
+                            <div class="text-4xl mb-2">⏳</div>
+                            <div>載入戰績數據中...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 數據摘要 -->
+            <div>
+                <div class="card rounded-xl p-6 h-full">
+                    <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                        <span class="text-blue-400">📊</span>
+                        <span>賽季摘要</span>
+                    </h2>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <div class="text-sm text-gray-400 mb-1">領先球隊</div>
+                            <div class="text-2xl font-bold" id="leadingTeam">-</div>
+                            <div class="text-sm text-gray-400" id="leadingRecord">-</div>
+                        </div>
+                        
+                        <div>
+                            <div class="text-sm text-gray-400 mb-1">最佳勝率</div>
+                            <div class="text-2xl font-bold" id="bestWinRate">-</div>
+                            <div class="text-sm text-gray-400" id="bestWinRateTeam">-</div>
+                        </div>
+                        
+                        <div>
+                            <div class="text-sm text-gray-400 mb-1">總比賽數</div>
+                            <div class="text-2xl font-bold" id="totalGames">-</div>
+                            <div class="text-sm text-gray-400">已進行賽事</div>
+                        </div>
+                        
+                        <div>
+                            <div class="text-sm text-gray-400 mb-1">數據狀態</div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                <div class="font-medium" id="dataStatus">本地數據</div>
+                            </div>
+                            <div class="text-sm text-gray-400 mt-1" id="dataSource">cpbl_correct_standings.json</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 球隊詳細資訊 -->
+        <div class="card rounded-xl p-6 mb-8">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                <span class="text-green-400">🏅</span>
+                <span>球隊詳細戰績</span>
+            </h2>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-gray-700">
+                            <th class="text-left py-3 px-4">排名</th>
+                            <th class="text-left py-3 px-4">球隊</th>
+                            <th class="text-left py-3 px-4">出賽數</th>
+                            <th class="text-left py-3 px-4">勝-和-敗</th>
+                            <th class="text-left py-3 px-4">勝率</th>
+                            <th class="text-left py-3 px-4">勝差</th>
+                            <th class="text-left py-3 px-4">狀態</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detailedTable">
+                        <!-- 詳細數據將在這裡動態生成 -->
+                        <tr>
+                            <td colspan="7" class="text-center py-8 text-gray-500">
+                                載入詳細數據中...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 系統狀態 -->
+        <div class="card rounded-xl p-6">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                <span class="text-purple-400">⚙️</span>
+                <span>系統狀態</span>
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-gray-800/50 p-4 rounded-lg">
+                    <div class="text-sm text-gray-400 mb-2">數據來源</div>
+                    <div class="font-medium">CPBL 官方網站</div>
+                    <div class="text-xs text-gray-500 mt-1">https://www.cpbl.com.tw</div>
+                </div>
+                
+                <div class="bg-gray-800/50 p-4 rounded-lg">
+                    <div class="text-sm text-gray-400 mb-2">運行模式</div>
+                    <div class="font-medium text-yellow-400">本地模式</div>
+                    <div class="text-xs text-gray-500 mt-1">伺服器連接失敗，使用本地數據</div>
+                </div>
+                
+                <div class="bg-gray-800/50 p-4 rounded-lg">
+                    <div class="text-sm text-gray-400 mb-2">下次更新</div>
+                    <div class="font-medium">每日 23:30</div>
+                    <div class="text-xs text-gray-500 mt-1">自動執行爬蟲任務</div>
+                </div>
+            </div>
+            
+            <div class="mt-6 pt-6 border-t border-gray-700">
+                <div class="text-sm text-gray-400 mb-2">注意事項</div>
+                <ul class="text-sm text-gray-500 space-y-1">
+                    <li>• 當前使用本地數據文件：cpbl_correct_standings.json</li>
+                    <li>• 伺服器 api.studio-imori.com 暫時無法訪問 (HTTP 502)</li>
+                    <li>• 數據更新時間：2026-04-14 23:37:15</li>
+                    <li>• 系統將在伺服器恢復後自動切換回線上模式</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 頁尾 -->
+        <footer class="mt-8 pt-6 border-t border-gray-800 text-center text-gray-500 text-sm">
+            <p>⚡ 由 Nosae (乃彩絵) 開發 | Studio Imori 創意技術實驗室</p>
+            <p class="mt-1">📅 數據更新時間: 每日自動執行 | 🎯 目標: 三國棒球數據整合</p>
+            <p class="mt-1 text-red-400">⚠️ 當前運行於本地模式 - 伺服器連接異常</p>
+        </footer>
+    </div>
+
+    <script>
+        // 本地數據
+        const localData = {
+            "timestamp": "2026-04-14T23:37:15.486867",
+            "status": "success",
+            "data_available": true,
+            "last_updated": "2026-04-14 23:37:15",
+            "standings": {
+                "timestamp": "2026-04-14T23:37:15.487075",
+                "source_url": "https://www.cpbl.com.tw/standings/season",
+                "date": "2026-04-14",
+                "teams": [
+                    {
+                        "rank": "1",
+                        "team_name": "味全龍",
+                        "games_played": "11",
+                        "wins": "7",
+                        "losses": "4",
+                        "ties": "0",
+                        "win_percentage": "0.636",
+                        "games_behind": "-"
+                    },
+                    {
+                        "rank": "1",
+                        "team_name": "台鋼雄鷹",
+                        "games_played": "12",
+                        "wins": "7",
+                        "losses": "4",
+                        "ties": "1",
+                        "win_percentage": "0.636",
+                        "games_behind": "0"
+                    },
+                    {
+                        "rank": "3",
+                        "team_name": "富邦悍將",
+                        "games_played": "10",
+                        "wins": "6",
+                        "losses": "4",
+                        "ties": "0",
+                        "win_percentage": "0.6",
+                        "games_behind": "0.5"
+                    },
+                    {
+                        "rank": "4",
+                        "team_name": "樂天桃猿",
+                        "games_played": "10",
+                        "wins": "5",
+                        "losses": "5",
+                        "ties": "0",
+                        "win_percentage": "0.5",
+                        "games_behind": "1.5"
+                    },
+                    {
+                        "rank": "5",
+                        "team_name": "統一7-ELEVEn獅",
+                        "games_played": "10",
+                        "wins": "4",
+                        "losses": "5",
+                        "ties": "1",
+                        "win_percentage": "0.444",
+                        "games_behind": "2"
+                    },
+                    {
+                        "rank": "6",
+                        "team_name": "中信兄弟",
+                        "games_played": "11",
+                        "wins": "2",
+                        "losses": "9",
+                        "ties": "0",
+                        "win_percentage": "0.182",
+                        "games_behind": "5"
+                    }
+                ]
+            },
+            "note": "CPBL戰績數據（實際提取版 - 僅戰績）"
+        };
+
+        // 球隊顏色映射
+        const teamColors = {
+            '中信兄弟': 'team-brothers',
+            '統一7-ELEVEn獅': 'team-lions',
+            '樂天桃猿': 'team-monkeys',
+            '富邦悍將': 'team-guardians',
+            '味全龍': 'team-dragons',
+            '台鋼雄鷹': 'team-eagles'
+        };
+
+        // 球隊圖示映射
+        const teamIcons = {
+            '中信兄弟': '🐯',
+            '統一7-ELEVEn獅': '🦁',
+            '樂天桃猿': '🐵',
+            '富邦悍將': '🛡️',
+            '味全龍': '🐉',
+            '台鋼雄鷹': '🦅'
+        };
+
+        // 初始化函數
+        function initDashboard() {
+            const teams = localData.standings.teams;
+            
+            // 更新時間
+            document.getElementById('updateTime').textContent = localData.last_updated;
+            
+            // 渲染戰績排名
+            renderStandings(teams);
+            
+            // 渲染詳細表格
+            renderDetailedTable(teams);
+            
+            // 更新摘要信息
+            updateSummary(teams);
+            
+            // 更新數據狀態
+            document.getElementById('dataStatus').textContent = '本地數據';
+            document.getElementById('dataSource').textContent = 'cpbl_correct_standings.json';
+        }
+
+        // 渲染戰績排名
+        function renderStandings(teams) {
+            const container = document.getElementById('standingsContainer');
+            container.innerHTML = '';
+            
+            teams.forEach(team => {
+                const winRate = parseFloat(team.win_percentage);
+                const winRatePercent = Math.round(winRate * 100);
+                
+                const teamClass = teamColors[team.team_name] || 'team-dragons';
+                const teamIcon = teamIcons[team.team_name] || '⚾';
+                
+                const card = document.createElement('div');
+                card.className = `card rounded-lg p-4 ${teamClass} ${team.rank === '1' ? 'highlight' : ''}`;
+                
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="rank-badge rank-${team.rank}">
+                                ${team.rank}
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-2xl">${teamIcon}</span>
+                                    <h3 class="text-xl font-bold">${team.team_name}</h3>
+                                </div>
+                                <div class="text-sm text-gray-400 mt-1">
+                                    出賽 ${team.games_played} 場 | ${team.wins}勝${team.losses}敗${team.ties > 0 ? team.ties + '和' : ''}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-right">
+                            <div class="text-3xl font-bold">${winRatePercent}%</div>
+                            <div class="text-sm text-gray-400">勝率</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>勝率進度</span>
+                            <span>${winRatePercent}%</span>
+                        </div>
+                        <div class="win-rate-bar">
+                            <div class="win-rate-fill bg-gradient-to-r from-yellow-500 to-orange-500" 
+                                 style="width: ${winRatePercent}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 flex justify-between text-sm">
+                        <div>
+                            <span class="text-gray-400">勝差:</span>
+                            <span class="font-medium ml-1">${team.games_behind === '-' ? '領先' : team.games_behind}</span>
+                        </div>
+                        <div class="text-gray-400">
+                            排名 ${team.rank}
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        // 渲染詳細表格
+        function renderDetailedTable(teams) {
+            const tbody = document.getElementById('detailedTable');
+            tbody.innerHTML = '';
+            
+            teams.forEach(team => {
+                const winRate = parseFloat(team.win_percentage);
+                const winRatePercent = Math.round(winRate * 100);
+                const teamIcon = teamIcons[team.team_name] || '⚾';
+                
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-800 hover:bg-gray-800/30 transition-colors';
+                
+                row.innerHTML = `
+                    <td class="py-3 px-4">
+                        <div class="rank-badge rank-${team.rank} inline-flex">
+                            ${team.rank}
+                        </div>
+                    </td>
+                    <td class="py-3 px-4 font-medium">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">${teamIcon}</span>
+                            <span>${team.team_name}</span>
+                        </div>
+                    </td>
+                    <td class="py-3 px-4">${team.games_played}</td>
+                    <td class="py-3 px-4 font-medium">${team.wins}-${team.ties}-${team.losses}</td>
+                    <td class="py-3 px-4">
+                        <div class="flex items-center gap-2">
+                            <span>${team.win_percentage}</span>
+                            <div class="win-rate-bar flex-1">
+                                <div class="win-rate-fill bg-gradient-to-r from-green-500 to-blue-500" 
+                                     style="width: ${winRatePercent}%"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-3 px-4">${team.games_behind === '-' ? '—' : team.games_behind}</td>
+                    <td class="py-3 px-4">
+                        ${parseInt(team.wins) > parseInt(team.losses) ? 
+                            '<span class="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">勝多敗少</span>' :
+                            '<span class="px-2 py-1 bg-red-500/20 text-red-400 rounded text-xs">敗多勝少</span>'}
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // 更新摘要信息
+        function updateSummary(teams) {
+            // 領先球隊
+            const leadingTeams = teams.filter(t => t.rank === '1');
+            if (leadingTeams.length > 0) {
+                document.getElementById('leadingTeam').textContent = leadingTeams.map(t => t.team_name).join(', ');
+                document.getElementById('leadingRecord').textContent = 
+                    leadingTeams.map(t => `${t.wins}勝${t.losses}敗`).join(', ');
+            }
+            
+            // 最佳勝率
+            const bestTeam = teams.reduce((best, current) => {
+                return parseFloat(current.win_percentage) > parseFloat(best.win_percentage) ? current : best;
+            });
+            
+            document.getElementById('bestWinRate').textContent = bestTeam.win_percentage;
+            document.getElementById('bestWinRateTeam').textContent = bestTeam.team_name;
+            
+            // 總比賽數
+            const totalGames = teams.reduce((sum, team) => sum + parseInt(team.games_played), 0);
+            document.getElementById('totalGames').textContent = totalGames;
+        }
+
+        // 頁面載入完成後初始化
+        document.addEventListener('DOMContentLoaded', initDashboard);
+
+        // 自動刷新數據（每5分鐘）
+        setInterval(() => {
+            console.log('數據刷新時間到，但當前為本地模式');
+        }, 5 * 60 * 1000);

@@ -1,0 +1,254 @@
+{
+  "timestamp": "2026-04-14T23:37:15.486867",
+  "status": "success",
+  "data_available": true,
+  "last_updated": "2026-04-14 23:37:15",
+  "standings": {
+    "timestamp": "2026-04-14T23:37:15.487075",
+    "source_url": "https://www.cpbl.com.tw/standings/season",
+    "date": "2026-04-14",
+    "teams": [
+      {
+        "rank": "1",
+        "team_name": "味全龍",
+        "games_played": "11",
+        "wins": "7",
+        "losses": "4",
+        "ties": "0",
+        "win_percentage": "0.636",
+        "games_behind": "-"
+      },
+      {
+        "rank": "1",
+        "team_name": "台鋼雄鷹",
+        "games_played": "12",
+        "wins": "7",
+        "losses": "4",
+        "ties": "1",
+        "win_percentage": "0.636",
+        "games_behind": "0"
+      },
+      {
+        "rank": "3",
+        "team_name": "富邦悍將",
+        "games_played": "10",
+        "wins": "6",
+        "losses": "4",
+        "ties": "0",
+        "win_percentage": "0.6",
+        "games_behind": "0.5"
+      },
+      {
+        "rank": "4",
+        "team_name": "樂天桃猿",
+        "games_played": "10",
+        "wins": "5",
+        "losses": "5",
+        "ties": "0",
+        "win_percentage": "0.5",
+        "games_behind": "1.5"
+      },
+      {
+        "rank": "5",
+        "team_name": "統一7-ELEVEn獅",
+        "games_played": "10",
+        "wins": "4",
+        "losses": "5",
+        "ties": "1",
+        "win_percentage": "0.444",
+        "games_behind": "2"
+      },
+      {
+        "rank": "6",
+        "team_name": "中信兄弟",
+        "games_played": "11",
+        "wins": "2",
+        "losses": "9",
+        "ties": "0",
+        "win_percentage": "0.182",
+        "games_behind": "5"
+      },
+      {
+        "rank": "0",
+        "team_name": "味全龍",
+        "games_played": "11",
+        "wins": "0",
+        "losses": "0",
+        "ties": "0",
+        "win_percentage": "1474",
+        "games_behind": "73"
+      },
+      {
+        "rank": "0",
+        "team_name": "台鋼雄鷹",
+        "games_played": "12",
+        "wins": "0",
+        "losses": "0",
+        "ties": "0",
+        "win_percentage": "1685",
+        "games_behind": "83"
+      },
+      {
+        "rank": "0",
+        "team_name": "富邦悍將",
+        "games_played": "10",
+        "wins": "0",
+        "losses": "0",
+        "ties": "0",
+        "win_percentage": "1511",
+        "games_behind": "101"
+      },
+      {
+        "rank": "0",
+        "team_name": "樂天桃猿",
+        "games_played": "10",
+        "wins": "0",
+        "losses": "0",
+        "ties": "0",
+        "win_percentage": "1421",
+        "games_behind": "84"
+      },
+      {
+        "rank": "0",
+        "team_name": "統一7-ELEVEn獅",
+        "games_played": "10",
+        "wins": "0",
+        "losses": "0",
+        "ties": "0",
+        "win_percentage": "1423",
+        "games_behind": "76"
+      },
+      {
+        "rank": "0",
+        "team_name": "中信兄弟",
+        "games_played": "11",
+        "wins": "0",
+        "losses": "0",
+        "ties": "0",
+        "win_percentage": "1591",
+        "games_behind": "111"
+      },
+      {
+        "rank": "0",
+        "team_name": "味全龍",
+        "games_played": "11",
+        "wins": "0",
+        "losses": "0",
+        "ties": "0",
+        "win_percentage": "44",
+        "games_behind": "41"
+      },
+      {
+        "rank": "0",
+        "team_name": "台鋼雄鷹",
+        "games_played": "12",
+        "wins": "0",
+        "losses": "0",
+        "ties": "0",
+        "win_percentage": "64",
+        "games_behind": "60"
+      },
+      {
+        "rank": "0",
+        "team_name": "富邦悍將",
+        "games_played": "10",
+        "wins": "0",
+        "losses": "0",
+        "ties": "0",
+        "win_percentage": "39",
+        "games_behind": "39"
+      },
+      {
+        "rank": "0",
+        "team_name": "樂天桃猿",
+        "games_played": "10",
+        "wins": "0",
+        "losses": "0",
+        "ties": "0",
+        "win_percentage": "25",
+        "games_behind": "24"
+      },
+      {
+        "rank": "0",
+        "team_name": "統一7-ELEVEn獅",
+        "games_played": "10",
+        "wins": "0",
+        "losses": "0",
+        "ties": "0",
+        "win_percentage": "34",
+        "games_behind": "31"
+      },
+      {
+        "rank": "0",
+        "team_name": "中信兄弟",
+        "games_played": "11",
+        "wins": "0",
+        "losses": "0",
+        "ties": "0",
+        "win_percentage": "41",
+        "games_behind": "38"
+      },
+      {
+        "rank": "0",
+        "team_name": "味全龍",
+        "games_played": "11",
+        "wins": "0",
+        "losses": "0",
+        "ties": "0",
+        "win_percentage": "292",
+        "games_behind": "111"
+      },
+      {
+        "rank": "0",
+        "team_name": "台鋼雄鷹",
+        "games_played": "12",
+        "wins": "0",
+        "losses": "0",
+        "ties": "0",
+        "win_percentage": "314",
+        "games_behind": "109"
+      },
+      {
+        "rank": "0",
+        "team_name": "富邦悍將",
+        "games_played": "10",
+        "wins": "0",
+        "losses": "0",
+        "ties": "0",
+        "win_percentage": "264",
+        "games_behind": "96"
+      },
+      {
+        "rank": "0",
+        "team_name": "樂天桃猿",
+        "games_played": "10",
+        "wins": "0",
+        "losses": "0",
+        "ties": "0",
+        "win_percentage": "267",
+        "games_behind": "93"
+      },
+      {
+        "rank": "0",
+        "team_name": "統一7-ELEVEn獅",
+        "games_played": "10",
+        "wins": "0",
+        "losses": "0",
+        "ties": "0",
+        "win_percentage": "263",
+        "games_behind": "93"
+      },
+      {
+        "rank": "0",
+        "team_name": "中信兄弟",
+        "games_played": "11",
+        "wins": "0",
+        "losses": "0",
+        "ties": "0",
+        "win_percentage": "292",
+        "games_behind": "106"
+      }
+    ]
+  },
+  "note": "CPBL戰績數據（實際提取版）"
+}

@@ -1,0 +1,68 @@
+{
+  "timestamp": "2026-04-15T23:34:50.047299",
+  "test_result": "success",
+  "teams_extracted": 6,
+  "teams": [
+    {
+      "rank": "1",
+      "team_name": "台鋼雄鷹",
+      "games_played": "13",
+      "wins": "8",
+      "losses": "4",
+      "ties": "1",
+      "win_percentage": "0.667",
+      "games_behind": "-"
+    },
+    {
+      "rank": "2",
+      "team_name": "味全龍",
+      "games_played": "11",
+      "wins": "7",
+      "losses": "4",
+      "ties": "0",
+      "win_percentage": "0.636",
+      "games_behind": "0.5"
+    },
+    {
+      "rank": "3",
+      "team_name": "富邦悍將",
+      "games_played": "10",
+      "wins": "6",
+      "losses": "4",
+      "ties": "0",
+      "win_percentage": "0.6",
+      "games_behind": "1"
+    },
+    {
+      "rank": "4",
+      "team_name": "統一7-ELEVEn獅",
+      "games_played": "11",
+      "wins": "5",
+      "losses": "5",
+      "ties": "1",
+      "win_percentage": "0.5",
+      "games_behind": "2"
+    },
+    {
+      "rank": "5",
+      "team_name": "樂天桃猿",
+      "games_played": "11",
+      "wins": "5",
+      "losses": "6",
+      "ties": "0",
+      "win_percentage": "0.455",
+      "games_behind": "2.5"
+    },
+    {
+      "rank": "6",
+      "team_name": "中信兄弟",
+      "games_played": "12",
+      "wins": "2",
+      "losses": "10",
+      "ties": "0",
+      "win_percentage": "0.167",
+      "games_behind": "6"
+    }
+  ],
+  "html_sample": "\n\n<!DOCTYPE HTML>\n<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"zh-Hant\">\n<head>\n    <!-- Google Tag Manager -->\n    <script>\n        (function (w, d, s, l, i) {\n            w[l] = w[l] || []; w[l].push({\n                'gtm.start':\n                    new Date().getTime(), event: 'gtm.js'\n            }); var f = d.getElementsByTagName(s)[0],\n                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =\n                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);\n        })(window, document, 'script', 'dataLayer', 'GTM-56Z9JC');</script>\n    <!-- End Google Tag Manager -->\n\n\n\n\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0\" />\n<meta name=\"apple-mobile-web-app-capable\" content=\"yes\" />\n<meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\" />\n<meta charset=\"UTF-8\" />\n    <meta name=\"description\" content=\"中華職業棒球大聯盟（CPBL），簡稱中華職棒、中職，是臺灣目前唯一的職業棒球聯盟，也是臺灣最早成立的職業運動聯盟。\" />\n    <meta property=\"og:title\" content=\"中華職棒大聯盟全球資訊網 The Official Site of CPBL\" />\n    <meta property=\"og:description\" content=\"中華職業棒球大聯盟（CPBL），簡稱中華職棒、中職，是臺灣目前唯一的職業棒球聯盟，也是臺灣最早成立的職業運動聯盟。\" />\n    <meta property=\"og:image\" content=\"https://www.cpbl.com.tw/theme/common/images/project/logo_new.png\" />\n\n    \n    <title>本季球隊戰績 | 中華職棒大聯盟全球資訊網 The Official Site of CPBL</title>\n\n    <link rel=\"shortcut icon\" href=\"/theme/client/images/favicon.ico\" />\n\n    <link href=\"/theme/client/css/style.css?v=20220331\" rel=\"stylesheet\" type=\"text/css\" />\n    \n\n<link href=\"/theme/client/css/content.css?v=20251113\" rel=\"stylesheet\" type=\"text/css\" />\n\n\n<link href=\"/bundles/css?v=nzlhs8MdHZvr4Vdkx1gtXwY2K0Px_QlNX-C-c3KOB8U1\" rel=\"stylesheet\"/>\n\n<script src=\"/bundles/js?v=Afnc8PGvBYAnAeJynYC2Znk0e6AKkZTEMTwsK4toBJE1\"></script>\n\n\n<script type=\"text/javascript\">\n    var pgInfo = {\n        SystemPhase: 11,\n        Form: null,\n        WebSiteRoot: \"/\",\n        UploadRoot: \"/files/\"\n    };\n\n    $(function () {\n        pgInfo.Form = $(\"form[id='MainForm']\");\n    });\n</script>\n\n\n<script type=\"text/javascript\">\n    var captchaHelper = (function () {\n        return {\n            reset: function () {\n                $('.captcha-code').attr('src', '/pageutil/captchacode' + \"?\" + Math.floor(Math.random() * (1000 - 1 + 1) + 1));\n                return false;\n            }\n        };\n    })();\n\n    $(function () {\n        //captchaHelper.reset();\n    });\n</script>\n\n\n    <script type=\"text/javascript\">\n        $(function () {\n            $('.superfish').superfish();\n            $('#MenuMobile').mmenu();\n        });\n        Date.prototype.addDays = function (days) {\n            this.setDate(this.getDate() + days);\n            return this;\n        }\n        Date.prototype.format = function (fmt) {\n            var o = {\n                \"M+\": this.getMonth() + 1, //月份\n                \"d+\": this.getDate(), //日\n                \"h+\": this.getHours(), //小時\n                \"m+\": this.getMinutes(), //分\n                \"s+\": this.getSeconds(), //秒\n                \"q+\": Math.floor((this.getMonth() + 3) / 3), //季度\n                \"S\": this.getMilliseconds() //毫秒\n            };\n            if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + \"\").substr(4 - RegExp.$1.length));\n            for (var k in o)\n                if (new RegExp(\"(\" + k + \")\").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : ((\"00\" + o[k]).substr((\"\" + o[k]).length)));\n            return fmt;\n        }\n    </script>\n\n    <link href=\"/theme/client/css/width_narrow.css?v=20251218\" media=\"only screen and (max-width: 639px)\" rel=\"stylesheet\" type=\"text/css\" />\n    <link href=\"/theme/client/css/width_wide.css?v=20251218\" media=\"only screen and (min-width: 640px) and (max-width: 1023px)\" rel=\"stylesheet\" type=\"text/css\" />\n    <link href=\"/theme/client/css/width_desktop.css?v=20251218\" media=\"only screen and (min-width: 1024px)\" rel=\"stylesheet\" type=\"text/css\" />\n    \n        <script src=\"/theme/client/js/vue.min.js?v=20250821\"></script>\n\n    \n\n\n\n<style>\n    [v-cloak] {\n        display: none;\n    }\n\n    .slide-enter-active {\n        -moz-transition-duration: 0.3s;\n        -webkit-transition-duration: 0.3s;\n        -o-transition-duration: 0.3s;\n        transition-duration: 0.3s;\n    }\n\n    .slide-leave-active {\n        -moz-transition-duration: 0.3s;\n        -webkit-transition-duration: 0.3s;\n        -o-transition-duration: 0.3s;\n        transition-duration: 0.3s;\n    }\n\n    .slide-enter-to, .slide-leave {\n        max-height: 500px;\n        overflow: hidden;\n    }\n\n    .slide-enter, .slide-leave-to {\n        overflow: hidden;\n        max-height: 0;\n    }\n</style>\n\n\n</head>\n<body>\n    <!-- Google Tag Manager (noscript) -->\n    <noscript>\n        <iframe src=\"https://www.googletagmanager.com/ns.html?id=GTM-56Z9JC\"\n                height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe>\n    </noscript"
+}
