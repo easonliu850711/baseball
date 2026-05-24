@@ -49,39 +49,48 @@ async function scrapeNPB(): Promise<{ central: any[]; pacific: any[] } | null> {
     })
     const html = await res.text()
 
-    // 找出兩聯盟戰績表格
+    // 找出所有表格
     const tables = html.match(/<table>[\s\S]*?<\/table>/g) || []
-    if (tables.length < 2) return null
+    if (tables.length < 14) return null
 
+    // Table 0 = 央聯, Table 13 = 洋聯（NPB 首頁固定結構）
     const parseTable = (tableHtml: string) => {
       const rows = tableHtml.match(/<tr>[\s\S]*?<\/tr>/g) || []
       return rows.slice(1).map((row: string, idx: number) => {
         const cells = Array.from(row.matchAll(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/g)).map(m => m[1].trim())
         if (cells.length < 7) return null
 
-        // 全名在 span.hide_sp 裡
-        const fullName = cells[0].match(/<span class="hide_sp">([^<]+)<\/span>/) || cells[0].match(/<span class="hide_sp">([^<]+)/)
-        const rawName = fullName ? fullName[1] : cells[0].replace(/<[^>]+>/g, '').trim()
-        const shortName = NPB_TEAM_SHORT[rawName] || rawName
+        // 全名在 span.hide_sp 裡，或直接取純文字（去掉 <br> 前後簡稱）
+        const spanMatch = cells[0].match(/<span class="hide_sp">([^<]+)<\/span>/)
+        let rawName = spanMatch ? spanMatch[1] : cells[0].replace(/<br\s*\/?>["']?.*$/m, '').replace(/<[^>]+>/g, '').trim()
+        // 有些隊名會黏簡稱（例「東京ヤクルトスワローズ東京ヤクルト」→ 取前半）
+        const shortName = NPB_TEAM_SHORT[rawName]
+        if (!shortName) {
+          // 試試用 known keys 比對開頭
+          const matched = Object.keys(NPB_TEAM_SHORT).find(k => rawName.startsWith(k))
+          if (matched) rawName = matched
+        }
+
+        const finalName = NPB_TEAM_SHORT[rawName] || rawName
 
         return {
           rank: idx + 1,
-          team_name: shortName,
+          team_name: finalName,
           games: parseInt(cells[1]) || 0,
           wins: parseInt(cells[2]) || 0,
           losses: parseInt(cells[3]) || 0,
           draws: parseInt(cells[4]) || 0,
           win_pct: cells[5],
           games_back: cells[6]?.trim() || '-',
-          color: NPB_COLORS[shortName] || 'text-gray-400',
-          stadium: NPB_STADIUMS[shortName] || '',
+          color: NPB_COLORS[finalName] || 'text-gray-400',
+          stadium: NPB_STADIUMS[finalName] || '',
         }
       }).filter(Boolean)
     }
 
     return {
-      central: parseTable(tables[0] || ''),
-      pacific: parseTable(tables[1] || ''),
+      central: parseTable(tables[0]!),
+      pacific: parseTable(tables[13]!),
     }
   } catch {
     return null
