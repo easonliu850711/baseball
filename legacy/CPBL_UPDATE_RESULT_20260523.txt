@@ -1,0 +1,32 @@
+⚾ CPBL 棒球數據每日更新報告
+=================================
+日期: 2026-05-23
+時間: 23:30 (Asia/Tokyo)
+任務ID: cron:873f870b-2bde-44cb-a092-f71255317270
+
+執行結果: 部分成功 (2/3)
+
+✅ 1. 爬蟲執行成功
+   來源: CPBL官網 standings/season
+   戰績數據 (2026-05-23):
+   1. 味全龍:      25W-13L-0D (0.658) GB: 領先
+   2. 富邦悍將:    21W-15L-0D (0.583) GB: 3.0
+   3. 台鋼雄鷹:    20W-18L-1D (0.526) GB: 5.0
+   4. 統一7-ELEVEn獅: 18W-19L-1D (0.486) GB: 6.5
+   5. 樂天桃猿:    15W-20L-1D (0.429) GB: 8.5
+   6. 中信兄弟:    11W-25L-1D (0.306) GB: 13.0
+
+   本月變化: 味全龍持續穩坐第一，與第二名富邦拉開至3場勝差。
+   台鋼雄鷹本月表現下滑，從第二跌至第三。
+
+✅ 2. 前端資料更新成功
+   - baseball-site/legacy/cpbl_final_data.json ✅
+   - baseball-site/legacy/cpbl_correct_standings.json ✅
+   - baseball-site/legacy/cpbl_data_20260523.json ✅
+   - baseball-site/public/data/cpbl_final_data.json ✅
+   - baseball-site/data/baseball.db (standings 表) ✅
+
+❌ 3. NAS/API 上傳失敗
+   主網域 (api.studio-imori.com): POST /nosae/upload 404
+   備援節點 (100.105.195.37): Caddy Gateway 無 upload endpoint
+   狀態: 與前次更新相同問題，API端點不在線
