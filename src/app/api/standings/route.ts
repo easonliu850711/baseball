@@ -10,105 +10,86 @@ const LEAGUE_META: Record<string, { icon: string; title: string }> = {
   CPBL: { icon: '🐉', title: '中華職棒' },
 }
 
-// ── 🪨 Fallback 靜態資料（DB 無資料時使用） ──
-const FALLBACK: Record<string, any[]> = {
-  NPB_CENTRAL: [
-    { rank: 1, team_name: '養樂多', games: 44, wins: 27, losses: 17, draws: 0, win_pct: '.614', games_back: '-', color: 'text-green-400', stadium: '神宮球場' },
-    { rank: 2, team_name: '阪神',   games: 43, wins: 25, losses: 17, draws: 1, win_pct: '.595', games_back: '1.0', color: 'text-yellow-400', stadium: '甲子園' },
-    { rank: 3, team_name: '巨人',   games: 43, wins: 24, losses: 19, draws: 0, win_pct: '.558', games_back: '2.5', color: 'text-orange-500', stadium: '東京巨蛋' },
-    { rank: 4, team_name: 'DeNA',   games: 44, wins: 20, losses: 22, draws: 2, win_pct: '.476', games_back: '6.0', color: 'text-blue-400', stadium: '橫濱球場' },
-    { rank: 5, team_name: '廣島',   games: 41, wins: 16, losses: 23, draws: 2, win_pct: '.410', games_back: '8.5', color: 'text-red-500', stadium: '馬自達球場' },
-    { rank: 6, team_name: '中日',   games: 43, wins: 14, losses: 28, draws: 1, win_pct: '.333', games_back: '12.0', color: 'text-blue-600', stadium: '名古屋巨蛋' },
-  ],
-  NPB_PACIFIC: [
-    { rank: 1, team_name: '歐力士', games: 43, wins: 25, losses: 18, draws: 0, win_pct: '.581', games_back: '-', color: 'text-amber-500', stadium: '京瓷巨蛋' },
-    { rank: 2, team_name: '西武',   games: 45, wins: 25, losses: 19, draws: 1, win_pct: '.568', games_back: '0.5', color: 'text-emerald-400', stadium: '西武巨蛋' },
-    { rank: 3, team_name: '火腿',   games: 46, wins: 23, losses: 23, draws: 0, win_pct: '.500', games_back: '3.5', color: 'text-sky-400', stadium: 'ES CON FIELD' },
-    { rank: 4, team_name: '軟銀',   games: 42, wins: 20, losses: 22, draws: 0, win_pct: '.476', games_back: '4.5', color: 'text-yellow-400', stadium: 'PayPay巨蛋' },
-    { rank: 5, team_name: '羅德',   games: 43, wins: 19, losses: 24, draws: 0, win_pct: '.442', games_back: '6.0', color: 'text-black', stadium: 'ZOZO海洋球場' },
-    { rank: 6, team_name: '樂天',   games: 43, wins: 18, losses: 24, draws: 1, win_pct: '.429', games_back: '6.5', color: 'text-red-400', stadium: '樂天移動通信球場' },
-  ],
-  CPBL: [
-    { rank: 1, team_name: '味全龍',  games: 36, wins: 23, losses: 13, draws: 0, win_pct: '.639', games_back: '-', color: 'text-red-500', stadium: '' },
-    { rank: 2, team_name: '富邦悍將', games: 33, wins: 19, losses: 14, draws: 0, win_pct: '.576', games_back: '2.5', color: 'text-blue-500', stadium: '' },
-    { rank: 3, team_name: '統一獅',  games: 35, wins: 18, losses: 16, draws: 1, win_pct: '.529', games_back: '4.0', color: 'text-orange-500', stadium: '' },
-    { rank: 4, team_name: '台鋼雄鷹', games: 37, wins: 18, losses: 18, draws: 1, win_pct: '.500', games_back: '5.0', color: 'text-emerald-400', stadium: '' },
-    { rank: 5, team_name: '樂天桃猿', games: 34, wins: 14, losses: 19, draws: 1, win_pct: '.424', games_back: '7.5', color: 'text-red-400', stadium: '' },
-    { rank: 6, team_name: '中信兄弟', games: 35, wins: 11, losses: 23, draws: 1, win_pct: '.324', games_back: '11.0', color: 'text-yellow-400', stadium: '' },
-  ],
+// ── NPB 隊名簡稱對照 ──
+const NPB_TEAM_SHORT: Record<string, string> = {
+  '東京ヤクルトスワローズ': '養樂多',
+  '阪神タイガース': '阪神',
+  '読売ジャイアンツ': '巨人',
+  '横浜DeNAベイスターズ': 'DeNA',
+  '広島東洋カープ': '廣島',
+  '中日ドラゴンズ': '中日',
+  'オリックス・バファローズ': '歐力士',
+  '埼玉西武ライオンズ': '西武',
+  '北海道日本ハムファイターズ': '火腿',
+  '福岡ソフトバンクホークス': '軟銀',
+  '千葉ロッテマリーンズ': '羅德',
+  '東北楽天ゴールデンイーグルス': '樂天',
 }
 
-function queryDB(league: string, season: number) {
-  const db = getDb()
-  const latest = db!.prepare(`
-    SELECT snapshot_date FROM standings
-    WHERE league = ? AND season = ?
-    ORDER BY snapshot_date DESC LIMIT 1
-  `).get(league, season) as { snapshot_date: string } | undefined
-
-  if (!latest) return null
-
-  const rows = db!.prepare(`
-    SELECT * FROM standings
-    WHERE league = ? AND season = ? AND snapshot_date = ?
-    ORDER BY rank ASC
-  `).all(league, season, latest.snapshot_date) as any[]
-
-  return rows.length > 0 ? rows : null
+const NPB_COLORS: Record<string, string> = {
+  '養樂多': 'text-green-400', '阪神': 'text-yellow-400', '巨人': 'text-orange-500',
+  'DeNA': 'text-blue-400', '廣島': 'text-red-500', '中日': 'text-blue-600',
+  '歐力士': 'text-amber-500', '西武': 'text-emerald-400', '火腿': 'text-sky-400',
+  '軟銀': 'text-yellow-400', '羅德': 'text-black', '樂天': 'text-red-400',
 }
 
-export async function GET(request: Request) {
+const NPB_STADIUMS: Record<string, string> = {
+  '養樂多': '神宮球場', '阪神': '甲子園', '巨人': '東京巨蛋',
+  'DeNA': '橫濱球場', '廣島': '馬自達球場', '中日': '名古屋巨蛋',
+  '歐力士': '京瓷巨蛋', '西武': '西武巨蛋', '火腿': 'ES CON FIELD',
+  '軟銀': 'PayPay巨蛋', '羅德': 'ZOZO海洋球場', '樂天': '樂天移動通信球場',
+}
+
+// ── 🕷️ 爬 NPB 官網取得即時戰績 ──
+async function scrapeNPB(): Promise<{ central: any[]; pacific: any[] } | null> {
   try {
-    initSchema()
+    const res = await fetch('https://npb.jp/', {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:136.0) Gecko/20100101 Firefox/136.0' },
+      signal: AbortSignal.timeout(10000),
+    })
+    const html = await res.text()
+
+    // 找出兩聯盟戰績表格
+    const tables = html.match(/<table>[\s\S]*?<\/table>/g) || []
+    if (tables.length < 2) return null
+
+    const parseTable = (tableHtml: string) => {
+      const rows = tableHtml.match(/<tr>[\s\S]*?<\/tr>/g) || []
+      return rows.slice(1).map((row: string, idx: number) => {
+        const cells = Array.from(row.matchAll(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/g)).map(m => m[1].trim())
+        if (cells.length < 7) return null
+
+        // 全名在 span.hide_sp 裡
+        const fullName = cells[0].match(/<span class="hide_sp">([^<]+)<\/span>/) || cells[0].match(/<span class="hide_sp">([^<]+)/)
+        const rawName = fullName ? fullName[1] : cells[0].replace(/<[^>]+>/g, '').trim()
+        const shortName = NPB_TEAM_SHORT[rawName] || rawName
+
+        return {
+          rank: idx + 1,
+          team_name: shortName,
+          games: parseInt(cells[1]) || 0,
+          wins: parseInt(cells[2]) || 0,
+          losses: parseInt(cells[3]) || 0,
+          draws: parseInt(cells[4]) || 0,
+          win_pct: cells[5],
+          games_back: cells[6]?.trim() || '-',
+          color: NPB_COLORS[shortName] || 'text-gray-400',
+          stadium: NPB_STADIUMS[shortName] || '',
+        }
+      }).filter(Boolean)
+    }
+
+    return {
+      central: parseTable(tables[0] || ''),
+      pacific: parseTable(tables[1] || ''),
+    }
   } catch {
-    // DB 不存在時直接 fallback
-  }
-
-  const { searchParams } = new URL(request.url)
-  const league = searchParams.get('league') || ''
-  const season = parseInt(searchParams.get('season') || '2026')
-
-  try {
-    if (league === 'npb') {
-      let central = queryDB('NPB_CENTRAL', season)
-      let pacific = queryDB('NPB_PACIFIC', season)
-
-      // Fallback to hardcoded data if DB is empty
-      if (!central) central = FALLBACK.NPB_CENTRAL
-      if (!pacific) pacific = FALLBACK.NPB_PACIFIC
-
-      return Response.json([
-        { league: LEAGUE_META.NPB_CENTRAL.title, icon: LEAGUE_META.NPB_CENTRAL.icon, teams: central.map(normalizeTeam) },
-        { league: LEAGUE_META.NPB_PACIFIC.title, icon: LEAGUE_META.NPB_PACIFIC.icon, teams: pacific.map(normalizeTeam) },
-      ])
-    }
-
-    if (league === 'cpbl') {
-      let rows = queryDB('CPBL', season)
-      if (!rows) rows = FALLBACK.CPBL
-
-      return Response.json([
-        { league: LEAGUE_META.CPBL.title, icon: LEAGUE_META.CPBL.icon, teams: rows.map(normalizeTeam) },
-      ])
-    }
-
-    return Response.json([])
-  } catch (err) {
-    // 任何 DB 錯誤時也用 fallback
-    if (league === 'npb') {
-      return Response.json([
-        { league: LEAGUE_META.NPB_CENTRAL.title, icon: LEAGUE_META.NPB_CENTRAL.icon, teams: FALLBACK.NPB_CENTRAL.map(normalizeTeam) },
-        { league: LEAGUE_META.NPB_PACIFIC.title, icon: LEAGUE_META.NPB_PACIFIC.icon, teams: FALLBACK.NPB_PACIFIC.map(normalizeTeam) },
-      ])
-    }
-    if (league === 'cpbl') {
-      return Response.json([
-        { league: LEAGUE_META.CPBL.title, icon: LEAGUE_META.CPBL.icon, teams: FALLBACK.CPBL.map(normalizeTeam) },
-      ])
-    }
-    return Response.json([])
+    return null
   }
 }
+
+// ── 硬編碼 Fallback（離線/爬蟲失敗時） ──
+const FALLBACK: Record<string, any[]> = require('./fallback.json')
 
 function normalizeTeam(row: any) {
   return {
@@ -123,4 +104,74 @@ function normalizeTeam(row: any) {
     color: row.color || '#',
     stadium: row.stadium || '',
   }
+}
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
+  const league = searchParams.get('league') || ''
+
+  // ── NPB：直接爬官網（即時） ──
+  if (league === 'npb') {
+    const scraped = await scrapeNPB()
+    if (scraped) {
+      return Response.json([
+        { league: LEAGUE_META.NPB_CENTRAL.title, icon: LEAGUE_META.NPB_CENTRAL.icon, teams: scraped.central.map(normalizeTeam) },
+        { league: LEAGUE_META.NPB_PACIFIC.title, icon: LEAGUE_META.NPB_PACIFIC.icon, teams: scraped.pacific.map(normalizeTeam) },
+      ])
+    }
+    // fallback
+    return Response.json([
+      { league: LEAGUE_META.NPB_CENTRAL.title, icon: LEAGUE_META.NPB_CENTRAL.icon, teams: FALLBACK.NPB_CENTRAL.map(normalizeTeam) },
+      { league: LEAGUE_META.NPB_PACIFIC.title, icon: LEAGUE_META.NPB_PACIFIC.icon, teams: FALLBACK.NPB_PACIFIC.map(normalizeTeam) },
+    ])
+  }
+
+  // ── CPBL：直接爬官網（即時） ──
+  if (league === 'cpbl') {
+    // 嘗試爬 CPBL 官網
+    try {
+      const res = await fetch('https://www.cpbl.com.tw/standings/', {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:136.0) Gecko/20100101 Firefox/136.0',
+          'Accept': 'text/html,application/xhtml+xml',
+          'Accept-Language': 'zh-TW,zh;q=0.9,en;q=0.8',
+        },
+        signal: AbortSignal.timeout(8000),
+      })
+      const html = await res.text()
+      const rows = html.match(/<tr[^>]*>[\s\S]*?<\/tr>/g) || []
+      if (rows.length > 5) {
+        const teams: any[] = []
+        for (const rowHtml of rows) {
+          const cells = rowHtml.match(/<t[dh][^>]*>[\s\S]*?<\/t[dh]>/g)
+          if (!cells || cells.length < 7) continue
+          const name = cells[0].replace(/<[^>]+>/g, '').trim()
+          if (!name || name === '排名' || name === '球隊') continue
+          const vals = cells.slice(1).map(c => c.replace(/<[^>]+>/g, '').trim())
+          teams.push({
+            rank: teams.length + 1,
+            team_name: name,
+            games: parseInt(vals[0]) || 0,
+            wins: parseInt(vals[1]) || 0,
+            losses: parseInt(vals[2]) || 0,
+            draws: parseInt(vals[3]) || 0,
+            win_pct: vals[4] || '.000',
+            games_back: vals[5] || '-',
+            color: '',
+            stadium: '',
+          })
+        }
+        if (teams.length >= 4) {
+          return Response.json([
+            { league: LEAGUE_META.CPBL.title, icon: LEAGUE_META.CPBL.icon, teams: teams.map(normalizeTeam) },
+          ])
+        }
+      }
+    } catch {}
+    return Response.json([
+      { league: LEAGUE_META.CPBL.title, icon: LEAGUE_META.CPBL.icon, teams: FALLBACK.CPBL.map(normalizeTeam) },
+    ])
+  }
+
+  return Response.json([])
 }
