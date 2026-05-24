@@ -41,6 +41,8 @@ export function initSchema(): void {
       draws           INTEGER DEFAULT 0,
       win_pct         TEXT,
       games_back      TEXT,
+      color           TEXT,
+      stadium         TEXT,
       streak          TEXT,
       created_at      TEXT DEFAULT (datetime('now'))
     );

@@ -66,6 +66,8 @@ function seed() {
       draws           INTEGER DEFAULT 0,
       win_pct         TEXT,
       games_back      TEXT,
+      color           TEXT,
+      stadium         TEXT,
       streak          TEXT,
       created_at      TEXT DEFAULT (datetime('now'))
     );
@@ -195,38 +197,40 @@ function seed() {
   }
 
   // === 3. Seed Standings (NPB + CPBL) ===
+  // 需用 NPB_CENTRAL / NPB_PACIFIC / CPBL 作為 league 名稱以對應 API Route
   const standingsData = [
     // 🏔️ 央聯
-    { league: 'NPB', division: '央聯', rank: 1, team: '養樂多', g: 44, w: 27, l: 17, d: 0, pct: '.614', gb: '-' },
-    { league: 'NPB', division: '央聯', rank: 2, team: '阪神',   g: 43, w: 25, l: 17, d: 1, pct: '.595', gb: '1.0' },
-    { league: 'NPB', division: '央聯', rank: 3, team: '巨人',   g: 43, w: 24, l: 19, d: 0, pct: '.558', gb: '2.5' },
-    { league: 'NPB', division: '央聯', rank: 4, team: 'DeNA',   g: 44, w: 20, l: 22, d: 2, pct: '.476', gb: '6.0' },
-    { league: 'NPB', division: '央聯', rank: 5, team: '廣島',   g: 41, w: 16, l: 23, d: 2, pct: '.410', gb: '8.5' },
-    { league: 'NPB', division: '央聯', rank: 6, team: '中日',   g: 43, w: 14, l: 28, d: 1, pct: '.333', gb: '12.0' },
+    { league: 'NPB_CENTRAL', rank: 1, team: '養樂多', g: 44, w: 27, l: 17, d: 0, pct: '.614', gb: '-', color: 'text-green-400', stadium: '神宮球場' },
+    { league: 'NPB_CENTRAL', rank: 2, team: '阪神',   g: 43, w: 25, l: 17, d: 1, pct: '.595', gb: '1.0', color: 'text-yellow-400', stadium: '甲子園' },
+    { league: 'NPB_CENTRAL', rank: 3, team: '巨人',   g: 43, w: 24, l: 19, d: 0, pct: '.558', gb: '2.5', color: 'text-orange-500', stadium: '東京巨蛋' },
+    { league: 'NPB_CENTRAL', rank: 4, team: 'DeNA',   g: 44, w: 20, l: 22, d: 2, pct: '.476', gb: '6.0', color: 'text-blue-400', stadium: '橫濱球場' },
+    { league: 'NPB_CENTRAL', rank: 5, team: '廣島',   g: 41, w: 16, l: 23, d: 2, pct: '.410', gb: '8.5', color: 'text-red-500', stadium: '馬自達球場' },
+    { league: 'NPB_CENTRAL', rank: 6, team: '中日',   g: 43, w: 14, l: 28, d: 1, pct: '.333', gb: '12.0', color: 'text-blue-600', stadium: '名古屋巨蛋' },
     // 🌊 洋聯
-    { league: 'NPB', division: '洋聯', rank: 1, team: '歐力士', g: 43, w: 25, l: 18, d: 0, pct: '.581', gb: '-' },
-    { league: 'NPB', division: '洋聯', rank: 2, team: '西武',   g: 45, w: 25, l: 19, d: 1, pct: '.568', gb: '0.5' },
-    { league: 'NPB', division: '洋聯', rank: 3, team: '火腿',   g: 46, w: 23, l: 23, d: 0, pct: '.500', gb: '3.5' },
-    { league: 'NPB', division: '洋聯', rank: 4, team: '軟銀',   g: 42, w: 20, l: 22, d: 0, pct: '.476', gb: '4.5' },
-    { league: 'NPB', division: '洋聯', rank: 5, team: '羅德',   g: 43, w: 19, l: 24, d: 0, pct: '.442', gb: '6.0' },
-    { league: 'NPB', division: '洋聯', rank: 6, team: '樂天',   g: 43, w: 18, l: 24, d: 1, pct: '.429', gb: '6.5' },
+    { league: 'NPB_PACIFIC', rank: 1, team: '歐力士', g: 43, w: 25, l: 18, d: 0, pct: '.581', gb: '-', color: 'text-amber-500', stadium: '京瓷巨蛋' },
+    { league: 'NPB_PACIFIC', rank: 2, team: '西武',   g: 45, w: 25, l: 19, d: 1, pct: '.568', gb: '0.5', color: 'text-emerald-400', stadium: '西武巨蛋' },
+    { league: 'NPB_PACIFIC', rank: 3, team: '火腿',   g: 46, w: 23, l: 23, d: 0, pct: '.500', gb: '3.5', color: 'text-sky-400', stadium: 'ES CON FIELD' },
+    { league: 'NPB_PACIFIC', rank: 4, team: '軟銀',   g: 42, w: 20, l: 22, d: 0, pct: '.476', gb: '4.5', color: 'text-yellow-400', stadium: 'PayPay巨蛋' },
+    { league: 'NPB_PACIFIC', rank: 5, team: '羅德',   g: 43, w: 19, l: 24, d: 0, pct: '.442', gb: '6.0', color: 'text-black', stadium: 'ZOZO海洋球場' },
+    { league: 'NPB_PACIFIC', rank: 6, team: '樂天',   g: 43, w: 18, l: 24, d: 1, pct: '.429', gb: '6.5', color: 'text-red-400', stadium: '樂天移動通信球場' },
     // 🐉 CPBL
-    { league: 'CPBL', division: null, rank: 1, team: '味全龍',  g: 36, w: 23, l: 13, d: 0, pct: '.639', gb: '-' },
-    { league: 'CPBL', division: null, rank: 2, team: '富邦悍將', g: 33, w: 19, l: 14, d: 0, pct: '.576', gb: '2.5' },
-    { league: 'CPBL', division: null, rank: 3, team: '統一獅',  g: 35, w: 18, l: 16, d: 1, pct: '.529', gb: '4.0' },
-    { league: 'CPBL', division: null, rank: 4, team: '台鋼雄鷹', g: 37, w: 18, l: 18, d: 1, pct: '.500', gb: '5.0' },
-    { league: 'CPBL', division: null, rank: 5, team: '樂天桃猿', g: 34, w: 14, l: 19, d: 1, pct: '.424', gb: '7.5' },
-    { league: 'CPBL', division: null, rank: 6, team: '中信兄弟', g: 35, w: 11, l: 23, d: 1, pct: '.324', gb: '11.0' },
+    { league: 'CPBL', rank: 1, team: '味全龍',  g: 36, w: 23, l: 13, d: 0, pct: '.639', gb: '-', color: 'text-red-500' },
+    { league: 'CPBL', rank: 2, team: '富邦悍將', g: 33, w: 19, l: 14, d: 0, pct: '.576', gb: '2.5', color: 'text-blue-500' },
+    { league: 'CPBL', rank: 3, team: '統一獅',  g: 35, w: 18, l: 16, d: 1, pct: '.529', gb: '4.0', color: 'text-orange-500' },
+    { league: 'CPBL', rank: 4, team: '台鋼雄鷹', g: 37, w: 18, l: 18, d: 1, pct: '.500', gb: '5.0', color: 'text-emerald-400' },
+    { league: 'CPBL', rank: 5, team: '樂天桃猿', g: 34, w: 14, l: 19, d: 1, pct: '.424', gb: '7.5', color: 'text-red-400' },
+    { league: 'CPBL', rank: 6, team: '中信兄弟', g: 35, w: 11, l: 23, d: 1, pct: '.324', gb: '11.0', color: 'text-yellow-400' },
   ]
 
   const insertStanding = db.prepare(`
-    INSERT OR IGNORE INTO standings (league, division, season, snapshot_date, rank, team_name, games, wins, losses, draws, win_pct, games_back)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT OR IGNORE INTO standings (league, division, season, snapshot_date, rank, team_name, games, wins, losses, draws, win_pct, games_back, color, stadium)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `)
 
+  // 欄位順序：league, division, season, snapshot_date, rank, team_name, games, wins, losses, draws, win_pct, games_back, color, stadium
   const tx2 = db.transaction(() => {
     for (const s of standingsData) {
-      insertStanding.run(s.league, s.division, 2026, today, s.rank, s.team, s.g, s.w, s.l, s.d, s.pct, s.gb)
+      insertStanding.run(s.league, null, 2026, today, s.rank, s.team, s.g, s.w, s.l, s.d, s.pct, s.gb, s.color || null, s.stadium || null)
     }
   })
   tx2()
