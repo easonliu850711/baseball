@@ -146,7 +146,7 @@ const today = new Date()
 
 let fromDate, toDate
 
-if (argDate) {
+if (argDate && /^\d{4}-\d{2}-\d{2}$/.test(argDate)) {
   fromDate = new Date(argDate)
   fromDate.setDate(fromDate.getDate() - 15)
   toDate = new Date(argDate)
