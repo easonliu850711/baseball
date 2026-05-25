@@ -3,28 +3,37 @@
  * 🕷️ Baseball Data Crawler
  *
  * Usage:
- *   node scripts/crawl-all.js          # Crawl all sources
- *   node scripts/crawl-all.js mlb      # Just MLB
- *   node scripts/crawl-all.js npb      # Just NPB (TODO)
+ *   node scripts/crawl-all.js              # Crawl all sources
+ *   node scripts/crawl-all.js mlb          # Just MLB standings
+ *   node scripts/crawl-all.js npb-schedule # NPB 賽程
+ *   node scripts/crawl-all.js cpbl-schedule # CPBL 賽程
+ *   node scripts/crawl-all.js all-schedule # NPB + CPBL 賽程
  */
 
 const sources = process.argv.slice(2)
 
 async function run() {
-  const tasks = sources.length === 0 || sources.includes('mlb')
-    ? ['mlb']
-    : sources
+  const all = sources.length === 0
 
-  for (const task of tasks) {
-    switch (task) {
-      case 'mlb':
-        await require('./crawl-mlb')()
-        break
-      // TODO: NPB / CPBL / KBO crawlers
-      default:
-        console.log(`[crawl] Unknown source: ${task}`)
-    }
+  if (all || sources.includes('mlb')) {
+    console.log('\n=== 🗽 MLB ===')
+    await require('./crawl-mlb')()
   }
+
+  if (all || sources.includes('npb-schedule') || sources.includes('all-schedule')) {
+    console.log('\n=== 🇯🇵 NPB 賽程 ===')
+    await require('./crawl-npb-schedule')()
+  }
+
+  if (all || sources.includes('cpbl-schedule') || sources.includes('all-schedule')) {
+    console.log('\n=== 🇹🇼 CPBL 賽程 ===')
+    await require('./crawl-cpbl-schedule')()
+  }
+
+  console.log('\n✅ 所有爬取任務完成')
 }
 
-run().catch(console.error)
+run().catch(err => {
+  console.error('❌ 爬取失敗:', err)
+  process.exit(1)
+})
