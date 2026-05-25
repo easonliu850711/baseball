@@ -301,7 +301,7 @@ export default function BaseballHome() {
 
         {/* ===== 🔗 子站傳送門 ===== */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="grid grid-cols-2 gap-4">
-          <Link href="/games" className="rounded-xl border border-ocean-light/20 bg-gradient-to-br from-ocean-mid/20 to-ocean-deep/40 backdrop-blur-sm p-5 group hover:border-ocean-wave/40 transition-all duration-300">
+          <Link href="/stadiums" className="rounded-xl border border-ocean-light/20 bg-gradient-to-br from-ocean-mid/20 to-ocean-deep/40 backdrop-blur-sm p-5 group hover:border-ocean-wave/40 transition-all duration-300">
             <div className="flex items-center gap-3 mb-2">
               <span className="text-2xl">📖</span>
               <h3 className="font-bold text-shell-white text-sm">棒球觀戰紀錄</h3>
