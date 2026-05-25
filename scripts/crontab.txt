@@ -1,0 +1,19 @@
+# Baseball 站資料爬蟲排程
+# 安裝方式：crontab scripts/crontab.txt
+# 或手動加入：crontab -e 然後貼上內容
+
+# ──────────────────────────
+# 時區：Asia/Tokyo (JST)
+# ──────────────────────────
+
+# 每天 06:00 JST — 爬 MLB 賽程（美國時間清晨，MLB 前一天打完）
+0 6 * * * cd /root/baseball && /usr/bin/node scripts/crawl-all.js all-schedule >> /root/baseball/logs/crawl.log 2>&1
+
+# 每天 08:00 JST — 爬 NPB + CPBL（日本+台灣時間早上，賽程已確定）
+0 8 * * * cd /root/baseball && /usr/bin/node scripts/crawl-all.js all-schedule >> /root/baseball/logs/crawl.log 2>&1
+
+# 每天 12:00 JST — 中午再確認一次（有些午場比賽結束可更新比分）
+0 12 * * * cd /root/baseball && /usr/bin/node scripts/crawl-all.js all-schedule >> /root/baseball/logs/crawl.log 2>&1
+
+# 每週日凌晨 03:00 JST — 清理 30 天前的舊爬蟲 log
+0 3 * * 0 find /root/baseball/logs -name "crawl.log.*" -mtime +30 -delete
