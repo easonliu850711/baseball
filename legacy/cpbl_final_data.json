@@ -1,12 +1,12 @@
 {
-  "timestamp": "2026-05-24T23:35:38.910602",
+  "timestamp": "2026-05-25T23:30:39.196043",
   "status": "success",
   "data_available": true,
-  "last_updated": "2026-05-24 23:35:38",
+  "last_updated": "2026-05-25 23:30:39",
   "standings": {
-    "timestamp": "2026-05-24T23:35:38.912152",
+    "timestamp": "2026-05-25T23:30:39.196930",
     "source_url": "https://www.cpbl.com.tw/standings/season",
-    "date": "2026-05-24",
+    "date": "2026-05-25",
     "teams": [
       {
         "rank": "1",
