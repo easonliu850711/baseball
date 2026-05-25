@@ -22,12 +22,16 @@ async function run() {
 
   if (all || sources.includes('npb-schedule') || sources.includes('all-schedule')) {
     console.log('\n=== 🇯🇵 NPB 賽程 ===')
-    await require('./crawl-npb-schedule')()
+    require('./crawl-npb-schedule')().catch(err => {
+      console.error('❌ NPB 爬取失敗:', err.message)
+    })
   }
 
   if (all || sources.includes('cpbl-schedule') || sources.includes('all-schedule')) {
     console.log('\n=== 🇹🇼 CPBL 賽程 ===')
-    await require('./crawl-cpbl-schedule')()
+    require('./crawl-cpbl-schedule')().catch(err => {
+      console.error('❌ CPBL 爬取失敗:', err.message)
+    })
   }
 
   console.log('\n✅ 所有爬取任務完成')
