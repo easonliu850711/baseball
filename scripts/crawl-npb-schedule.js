@@ -171,3 +171,5 @@ crawlNPB(fromDate, toDate)
     console.error('❌ 爬取失敗:', err)
     process.exit(1)
   })
+
+module.exports = crawlNPB

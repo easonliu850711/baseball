@@ -135,3 +135,5 @@ crawlCPBL(year)
     console.error('❌ 爬取失敗:', err)
     process.exit(1)
   })
+
+module.exports = crawlCPBL
