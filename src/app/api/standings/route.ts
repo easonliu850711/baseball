@@ -1,3 +1,5 @@
+import { getDb } from '@/lib/db'
+import { initSchema } from '@/lib/schema'
 import FALLBACK from './fallback.json'
 
 export const runtime = 'nodejs'
@@ -246,6 +248,39 @@ export async function GET(request: Request) {
   }
 
   if (league === 'cpbl') {
+    // 先讀 DB cache
+    try {
+      initSchema()
+      const db = getDb()
+      const latestDate = db.prepare(
+        "SELECT snapshot_date FROM standings WHERE league = ? AND season = ? ORDER BY snapshot_date DESC LIMIT 1"
+      ).get('CPBL', 2026) as { snapshot_date: string } | undefined
+
+      if (latestDate) {
+        const rows = db.prepare(
+          "SELECT * FROM standings WHERE league = ? AND season = ? AND snapshot_date = ? ORDER BY rank ASC"
+        ).all('CPBL', 2026, latestDate.snapshot_date) as any[]
+
+        if (rows.length >= 4) {
+          const teams = rows.map(r => ({
+            rank: r.rank,
+            team_name: r.team_name,
+            games: r.games,
+            wins: r.wins,
+            losses: r.losses,
+            draws: r.draws,
+            win_pct: r.win_pct,
+            games_back: r.games_back,
+            color: '',
+            stadium: '',
+          }))
+          return Response.json([
+            { league: LEAGUE_META.CPBL.title, icon: LEAGUE_META.CPBL.icon, teams: teams.map(normalizeTeam) },
+          ])
+        }
+      }
+    } catch { /* DB 不可用 */ }
+
     return Response.json([
       { league: LEAGUE_META.CPBL.title, icon: LEAGUE_META.CPBL.icon, teams: (FALLBACK as any).CPBL.map(normalizeTeam) },
     ])
