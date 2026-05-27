@@ -1,6 +1,6 @@
 import { getDb } from '@/lib/db'
 import { initSchema } from '@/lib/schema'
-import { writeFileSync } from 'fs'
+import { writeFileSync, readFileSync } from 'fs'
 import { join } from 'path'
 
 export const runtime = 'nodejs'
@@ -18,11 +18,20 @@ interface StandingTeam {
 }
 
 interface SyncBody {
-  token: string
+  token?: string
   league: string       // 'cpbl' | 'npb' | 'mlb' | 'kbo'
   season: number
   date: string          // '2026-05-27'
   teams: StandingTeam[]
+}
+
+function getIncomingToken(request: Request, body: SyncBody): string {
+  const authHeader = request.headers.get('authorization') || ''
+  const bearerToken = authHeader.toLowerCase().startsWith('bearer ')
+    ? authHeader.slice(7).trim()
+    : ''
+
+  return String(body.token || bearerToken || '').trim()
 }
 
 export async function POST(request: Request) {
@@ -30,8 +39,18 @@ export async function POST(request: Request) {
     const body: SyncBody = await request.json()
 
     // ── 驗證 token ──
-    if (body.token !== process.env.SYNC_TOKEN) {
-      return Response.json({ success: false, error: '無效的 token' }, { status: 401 })
+    // 支援兩種送法：
+    // 1. JSON body: { "token": "..." }
+    // 2. Header: Authorization: Bearer ...
+    const serverToken = String(process.env.SYNC_TOKEN || '').trim()
+    const incomingToken = getIncomingToken(request, body)
+
+    if (!serverToken || incomingToken !== serverToken) {
+      return Response.json({
+        success: false,
+        error: '無效的 token',
+        tokenConfigured: Boolean(serverToken),
+      }, { status: 401 })
     }
 
     if (!body.league || !body.date || !body.teams?.length) {
@@ -42,11 +61,13 @@ export async function POST(request: Request) {
     initSchema()
     const db = getDb()
 
+    const league = body.league.toUpperCase()
+
     // ── 刪除當天同一聯盟的舊快照，再寫入新數據 ──
     const deleteStmt = db.prepare(
       'DELETE FROM standings WHERE league = ? AND season = ? AND snapshot_date = ?'
     )
-    deleteStmt.run(body.league.toUpperCase(), body.season, body.date)
+    deleteStmt.run(league, body.season, body.date)
 
     const insertStmt = db.prepare(`
       INSERT INTO standings (league, season, snapshot_date, rank, team_name, games, wins, losses, draws, win_pct, games_back)
@@ -58,7 +79,7 @@ export async function POST(request: Request) {
         const games = Number(t.games_played ?? 0) || (Number(t.wins) + Number(t.losses) + Number(t.ties ?? 0))
         const draws = Number(t.ties ?? 0)
         insertStmt.run(
-          body.league.toUpperCase(), body.season, body.date,
+          league, body.season, body.date,
           Number(t.rank), t.team_name, games,
           Number(t.wins), Number(t.losses), draws,
           String(t.win_percentage), t.games_behind
@@ -72,10 +93,10 @@ export async function POST(request: Request) {
     const fallbackPath = join(process.cwd(), 'src', 'app', 'api', 'standings', 'fallback.json')
     let fallbackData: Record<string, any[]> = {}
     try {
-      fallbackData = JSON.parse(require('fs').readFileSync(fallbackPath, 'utf-8'))
+      fallbackData = JSON.parse(readFileSync(fallbackPath, 'utf-8'))
     } catch { /* ignore */ }
 
-    fallbackData[body.league.toUpperCase()] = body.teams.map(t => ({
+    fallbackData[league] = body.teams.map(t => ({
       team_name: t.team_name,
       games: Number(t.games_played ?? 0) || (Number(t.wins) + Number(t.losses) + Number(t.ties ?? 0)),
       wins: Number(t.wins),
@@ -92,10 +113,10 @@ export async function POST(request: Request) {
 
     return Response.json({
       success: true,
-      league: body.league,
+      league,
       date: body.date,
       teams_saved: body.teams.length,
-      message: `${body.league.toUpperCase()} 戰績已同步（${body.date}，${body.teams.length} 隊）`,
+      message: `${league} 戰績已同步（${body.date}，${body.teams.length} 隊）`,
     })
   } catch (err) {
     console.error('sync/standings error:', err)
