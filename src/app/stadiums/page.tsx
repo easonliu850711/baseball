@@ -41,7 +41,8 @@ const WATCH_LOG = [
 export default function WatchRecords() {
   const totalGames = STADIUM_TOUR.length
   const totalBought = BOUGHT.length
-  const progressPercent = Math.round((totalBought / totalGames) * 100)
+  const totalWatched = WATCH_LOG.filter(w => w.hasRecord).length
+  const progressPercent = Math.round((totalWatched / totalGames) * 100)
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-ocean-abyss to-ocean-deep py-8 px-4">
@@ -85,8 +86,12 @@ export default function WatchRecords() {
               <p className="text-xs text-stone-gray mt-1">總場次</p>
             </div>
             <div className="ocean-card p-5 rounded-xl border border-ocean-light/20 bg-ocean-mid/20 text-center">
-              <p className="text-3xl font-bold text-emerald-400">{totalBought}</p>
-              <p className="text-xs text-stone-gray mt-1">已購 ✅</p>
+              <p className="text-3xl font-bold text-emerald-400">{totalWatched}</p>
+              <p className="text-xs text-stone-gray mt-1">已制霸 ✅</p>
+            </div>
+            <div className="ocean-card p-5 rounded-xl border border-ocean-light/20 bg-ocean-mid/20 text-center">
+              <p className="text-3xl font-bold text-sunray">{totalBought}</p>
+              <p className="text-xs text-stone-gray mt-1">已購票 🎫</p>
             </div>
             <div className="ocean-card p-5 rounded-xl border border-ocean-light/20 bg-ocean-mid/20 text-center">
               <p className="text-3xl font-bold text-coral-light">{14 - totalBought}</p>

@@ -7,10 +7,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X, Home, Gamepad2, Globe, BarChart3, MapPin } from 'lucide-react'
 
 const navLinks = [
-  { href: '/stadiums', label: '主場巡禮', icon: <MapPin className="w-3.5 h-3.5" /> },
   { href: '/', label: '戰績', icon: <BarChart3 className="w-3.5 h-3.5" /> },
   { href: '/games', label: '今日賽程', icon: <Gamepad2 className="w-3.5 h-3.5" /> },
   { href: '/players', label: '旅外球員', icon: <Globe className="w-3.5 h-3.5" /> },
+  { href: '/stadiums', label: '主場巡禮', icon: <MapPin className="w-3.5 h-3.5" /> },
 ]
 
 export default function NavBar() {
