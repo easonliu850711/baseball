@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Trophy, ExternalLink, RefreshCw } from 'lucide-react'
+import { Trophy, ExternalLink, RefreshCw, BookOpen, Users, CalendarDays, MapPin, CheckCircle, Clock, DollarSign, Star, ArrowRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 
@@ -207,6 +207,26 @@ export default function BaseballHome() {
             <span className="text-gradient">⚾ 世界棒球戰績</span>
           </h1>
           <p className="text-stone-gray/70 text-sm max-w-xl mx-auto">NPB · CPBL · MLB · KBO 即時排行榜</p>
+
+          {/* 🔗 Hero 導流按鈕 */}
+          <div className="flex flex-wrap justify-center gap-3 mt-6">
+            <Link href="/stadiums" className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-ocean-light/15 bg-ocean-mid/20 text-shell-white text-sm hover:border-ocean-wave/40 hover:bg-ocean-mid/30 transition-all duration-200">
+              <MapPin className="w-4 h-4 text-coral" />
+              主場巡禮
+            </Link>
+            <Link href="/players" className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-ocean-light/15 bg-ocean-mid/20 text-shell-white text-sm hover:border-ocean-wave/40 hover:bg-ocean-mid/30 transition-all duration-200">
+              <Users className="w-4 h-4 text-seafoam" />
+              旅外選手
+            </Link>
+            <Link href="/games" className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-ocean-light/15 bg-ocean-mid/20 text-shell-white text-sm hover:border-ocean-wave/40 hover:bg-ocean-mid/30 transition-all duration-200">
+              <CalendarDays className="w-4 h-4 text-ocean-wave" />
+              賽程戰報
+            </Link>
+            <Link href="/stadiums" className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-ocean-light/15 bg-ocean-mid/20 text-shell-white text-sm hover:border-ocean-wave/40 hover:bg-ocean-mid/30 transition-all duration-200">
+              <BookOpen className="w-4 h-4 text-stone-gray" />
+              觀戰紀錄
+            </Link>
+          </div>
         </motion.div>
 
         <div className="flex items-center justify-center gap-2 mb-8">
