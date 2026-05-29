@@ -30,9 +30,10 @@ const TOTAL_COST = BOUGHT.reduce((sum, s) => sum + s.price, 0)
 
 // 📖 看球紀錄簿
 const WATCH_LOG = [
-  { date: '2026-04-26', opponent: '楽天 vs 西武', stadium: '楽天モバイルパーク', highlight: '則本昂大の力投！', mood: '🎉' },
-  { date: '2026-04-28', opponent: 'ロッテ vs 日本ハム', stadium: 'ZOZOマリン', highlight: '佐佐木朗希の圧巻', mood: '🔥' },
-  { date: '2026-05-04', opponent: '西武 vs 楽天', stadium: 'ベルーナドーム', highlight: '渡邊勇太朗好投', mood: '👍' },
+  { date: '2026-04-01', opponent: '東北楽天 vs 福岡軟銀', stadium: '楽天モバイルパーク', highlight: '單日來回仙台，若熙日本初先發，6局無失分好投', mood: '🔥' },
+  { date: '2026-05-03', opponent: '千葉羅德 vs 西武獅', stadium: 'ZOZOマリン', highlight: '換來看溫安可，代打上陣（雖然沒敲安）', mood: '🎉' },
+  { date: '2025-09-13', opponent: '台鋼 vs 富邦', stadium: '澄清湖棒球場', highlight: '終於見到超美一粒', mood: '💖' },
+  { date: '2024-11-24', opponent: '台灣 vs 日本 4:0', stadium: '東京ドーム', highlight: '炸裂東蛋，史上最屌比賽之一，賽後哭爆 Taiwan No.1', mood: '🏆' },
 ]
 
 export default function WatchRecords() {
