@@ -21,11 +21,18 @@ function toIso(raw: string): string {
 
 export async function POST(request: Request) {
   try {
-    const authHeader = request.headers.get('authorization')
-    const token = authHeader?.replace('Bearer ', '')
+    const authHeader = request.headers.get('authorization') || ''
+    const token = authHeader.toLowerCase().startsWith('bearer ')
+      ? authHeader.slice(7).trim()
+      : ''
 
-    if (token !== process.env.SYNC_TOKEN) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    const serverToken = String(process.env.SYNC_TOKEN || '').trim()
+
+    if (!serverToken || token !== serverToken) {
+      return Response.json(
+        { success: false, error: 'Unauthorized', tokenConfigured: Boolean(serverToken) },
+        { status: 401 }
+      )
     }
 
     const body = await request.json()
