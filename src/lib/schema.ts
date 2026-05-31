@@ -1,5 +1,71 @@
 import { getDb } from './db'
 
+type BaseballDb = ReturnType<typeof getDb>
+
+
+function migratePlayerNewsAwayFromPlayersForeignKey(db: BaseballDb): void {
+  const foreignKeys = db.prepare('PRAGMA foreign_key_list(player_news)').all() as Array<{ table: string }>
+  const hasPlayersForeignKey = foreignKeys.some(fk => fk.table === 'players')
+
+  if (!hasPlayersForeignKey) return
+
+  db.pragma('foreign_keys = OFF')
+
+  try {
+    db.transaction(() => {
+      db.exec(`
+        DROP TABLE IF EXISTS player_news_new;
+
+        CREATE TABLE player_news_new (
+          id              INTEGER PRIMARY KEY AUTOINCREMENT,
+          player_id       TEXT NOT NULL,
+          title           TEXT NOT NULL,
+          summary         TEXT,
+          url             TEXT,
+          source          TEXT,
+          published_at    TEXT,
+          category        TEXT DEFAULT 'general',
+          created_at      TEXT DEFAULT (datetime('now'))
+        );
+
+        INSERT INTO player_news_new (
+          id, player_id, title, summary, url, source, published_at, category, created_at
+        )
+        SELECT
+          id, player_id, title, summary, url, source, published_at, category, created_at
+        FROM player_news;
+
+        DROP TABLE player_news;
+        ALTER TABLE player_news_new RENAME TO player_news;
+      `)
+    })()
+  } finally {
+    db.pragma('foreign_keys = ON')
+  }
+}
+
+function dedupePlayerNews(db: BaseballDb): void {
+  db.exec(`
+    DELETE FROM player_news
+    WHERE url IS NOT NULL
+      AND url <> ''
+      AND id NOT IN (
+        SELECT MIN(id)
+        FROM player_news
+        WHERE url IS NOT NULL AND url <> ''
+        GROUP BY player_id, url
+      );
+  `)
+}
+
+function ensurePlayerNewsIndexes(db: BaseballDb): void {
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_player_news_player ON player_news(player_id);
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_player_news_unique ON player_news(player_id, url);
+    CREATE INDEX IF NOT EXISTS idx_player_news_date ON player_news(published_at);
+  `)
+}
+
 export function initSchema(): void {
   const db = getDb()
 
@@ -128,7 +194,9 @@ export function initSchema(): void {
     -- ================================================================
     CREATE TABLE IF NOT EXISTS player_news (
       id              INTEGER PRIMARY KEY AUTOINCREMENT,
-      player_id       TEXT NOT NULL REFERENCES players(id),
+      -- 旅外球員主資料已改由 src/data/overseas-players.json 維護，
+      -- 因此新聞只保存 player_id 字串，不再 FK 到 SQLite players table。
+      player_id       TEXT NOT NULL,
       title           TEXT NOT NULL,
       summary         TEXT,
       url             TEXT,
@@ -179,4 +247,8 @@ export function initSchema(): void {
       finished_at     TEXT
     );
   `)
+
+  migratePlayerNewsAwayFromPlayersForeignKey(db)
+  dedupePlayerNews(db)
+  ensurePlayerNewsIndexes(db)
 }
