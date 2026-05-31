@@ -148,8 +148,8 @@ function normalizeStatus(raw: string | undefined): GameStatus {
   const text = String(raw || '').trim().toLowerCase()
   if (!text) return 'scheduled'
   if (/final|game over|finished|closed|complete|已結束|比賽結束/.test(text)) return 'finished'
-  if (/live|in progress|進行中|top|bot|mid|end/.test(text)) return 'live'
-  if (/postpon|延賽/.test(text)) return 'postponed'
+  if (/live|in progress|進行中|比賽中|top|bot|mid|end/.test(text)) return 'live'
+  if (/postpon|rain|延賽/.test(text)) return 'postponed'
   if (/cancel|取消/.test(text)) return 'cancelled'
   if (/reserved|保留/.test(text)) return 'reserved'
   if (/suspend|暫停/.test(text)) return 'suspended'
@@ -280,28 +280,35 @@ async function fetchNPBGames(date: string): Promise<GameRecord[]> {
 
 function parseKBOHeader(line: string): { away: string; home: string; awayScore: number | null; homeScore: number | null; status: GameStatus; time: string } | null {
   const teamRe = KBO_TEAMS.join('|')
-  const scheduled = line.match(new RegExp(`^(${teamRe})\\s+(VS|\\d{1,2}:\\d{2})\\s+(${teamRe})$`, 'i'))
-  if (scheduled) {
+  const normalized = line
+    .replace(/Image:\s*[A-Za-z0-9_-]+/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  const liveOrFinal = normalized.match(
+    new RegExp(`(?:^|\\s)(${teamRe})\\s+(\\d+)\\s+((?:TOP|BOT|MID|END)\\s*\\d+(?:ST|ND|RD|TH)?|FINAL(?:/\\d+)?|GAME OVER|CANCELED|POSTPONED|RAINED OUT|SUSPENDED)\\s+(\\d+)\\s+(${teamRe})(?:\\s|$)`, 'i')
+  )
+  if (liveOrFinal) {
     return {
-      away: scheduled[1],
-      home: scheduled[3],
-      awayScore: null,
-      homeScore: null,
-      status: 'scheduled',
-      time: scheduled[2] === 'VS' ? '' : scheduled[2],
+      away: liveOrFinal[1].toUpperCase(),
+      awayScore: toNumber(liveOrFinal[2]),
+      status: normalizeStatus(liveOrFinal[3]),
+      homeScore: toNumber(liveOrFinal[4]),
+      home: liveOrFinal[5].toUpperCase(),
+      time: '',
     }
   }
 
-  const liveOrFinal = line.match(new RegExp(`^(${teamRe})\\s+(\\d+)\\s+(.+?)\\s+(\\d+)\\s+(${teamRe})$`, 'i'))
-  if (!liveOrFinal) return null
+  const scheduled = normalized.match(new RegExp(`(?:^|\\s)(${teamRe})\\s+(VS|\\d{1,2}:\\d{2})\\s+(${teamRe})(?:\\s|$)`, 'i'))
+  if (!scheduled) return null
 
   return {
-    away: liveOrFinal[1],
-    awayScore: toNumber(liveOrFinal[2]),
-    status: normalizeStatus(liveOrFinal[3]),
-    homeScore: toNumber(liveOrFinal[4]),
-    home: liveOrFinal[5],
-    time: '',
+    away: scheduled[1].toUpperCase(),
+    home: scheduled[3].toUpperCase(),
+    awayScore: null,
+    homeScore: null,
+    status: 'scheduled',
+    time: scheduled[2].toUpperCase() === 'VS' ? '' : scheduled[2],
   }
 }
 
@@ -339,41 +346,153 @@ async function fetchKBOGames(date: string): Promise<GameRecord[]> {
   return uniqueGames(games)
 }
 
+function cleanCPBLSourceLines(lines: string[]): string[] {
+  return lines
+    .map((line) => line
+      .replace(/Image:\s*[^\s]+/gi, ' ')
+      .replace(/\{\{[\s\S]*?\}\}/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim())
+    .filter(Boolean)
+}
+
+function isCPBLTeamLine(line: string): string | null {
+  const teams = CPBL_TEAMS.filter((team) => line === team || line.includes(team))
+  return teams.length === 1 ? teams[0] : null
+}
+
+function isCPBLRecordLine(line: string): boolean {
+  return /^\d+-\d+-\d+$/.test(line)
+}
+
+function isCPBLDateLine(line: string): boolean {
+  return /^\d{1,2}月\d{1,2}日/.test(line) || /^\d{1,2}\/\d{1,2}(?:\s|\(|$)/.test(line)
+}
+
+function normalizeCPBLTime(value: string): string {
+  const match = value.match(/^(\d{1,2}):(\d{2})$/)
+  if (!match) return value
+
+  const hour = Number(match[1])
+  if (!Number.isFinite(hour)) return value
+
+  // stats.cpbl.com.tw 的 SSR 文字常把 16:05 / 17:05 / 18:35 顯示成 00:05 / 01:05 / 02:35。
+  // 這裡只校正 CPBL 不會使用的凌晨開賽時段，避免正常白天賽程被誤改。
+  if (hour >= 0 && hour <= 3) {
+    return `${String((hour + 16) % 24).padStart(2, '0')}:${match[2]}`
+  }
+
+  return value
+}
+
+function findNextCPBLTeam(lines: string[], start: number) {
+  for (let i = start; i < lines.length; i++) {
+    const team = isCPBLTeamLine(lines[i])
+    if (team) return { index: i, value: team }
+  }
+  return null
+}
+
+function findNextCPBLValue(lines: string[], start: number, predicate: (line: string) => boolean) {
+  for (let i = start; i < lines.length; i++) {
+    const value = lines[i]
+    if (predicate(value)) return { index: i, value }
+  }
+  return null
+}
+
+function parseCPBLCompactBlock(block: string[], date: string, season: number): GameRecord[] {
+  const text = block.join(' ').replace(/\s+/g, ' ')
+  const teamRe = CPBL_TEAM_RE
+  const games: GameRecord[] = []
+
+  const finishedRe = new RegExp(`(${teamRe})\\s+(?:\\d+-\\d+-\\d+\\s+)?(\\d+)\\s*:\\s*(\\d+)\\s+([^\\s]+)\\s+(${teamRe})(?:\\s+\\d+-\\d+-\\d+)?\\s+GAME\\s*(\\d+)\\s*(已結束|進行中|比賽中|比賽暫停)?`, 'g')
+  let finished: RegExpExecArray | null
+  while ((finished = finishedRe.exec(text)) !== null) {
+    games.push(normalizeGame({
+      id: `CPBL-${date}-${finished[6]}`,
+      league: 'CPBL',
+      season,
+      game_date: date,
+      away_team: finished[1],
+      home_team: finished[5],
+      away_score: toNumber(finished[2]),
+      home_score: toNumber(finished[3]),
+      stadium: finished[4],
+      status: normalizeStatus(finished[7] || '已結束'),
+      game_time: '',
+      game_pk: finished[6],
+      source: 'CPBL advanced stats',
+    }))
+  }
+
+  const scheduledRe = new RegExp(`(${teamRe})\\s+(?:\\d+-\\d+-\\d+\\s+)?(?:vs|VS\\.?)\\s+([^\\s]+)\\s+(\\d{1,2}:\\d{2})\\s+(${teamRe})(?:\\s+\\d+-\\d+-\\d+)?\\s+GAME\\s*(\\d+)\\s*(未開始|延賽|取消|保留|比賽暫停|進行中)?`, 'g')
+  let scheduled: RegExpExecArray | null
+  while ((scheduled = scheduledRe.exec(text)) !== null) {
+    games.push(normalizeGame({
+      id: `CPBL-${date}-${scheduled[5]}`,
+      league: 'CPBL',
+      season,
+      game_date: date,
+      away_team: scheduled[1],
+      home_team: scheduled[4],
+      away_score: null,
+      home_score: null,
+      stadium: scheduled[2],
+      status: normalizeStatus(scheduled[6] || '未開始'),
+      game_time: normalizeCPBLTime(scheduled[3]),
+      game_pk: scheduled[5],
+      source: 'CPBL advanced stats',
+    }))
+  }
+
+  return games
+}
+
 function parseCPBLFromLines(lines: string[], date: string, season: number): GameRecord[] {
-  const [, monthRaw, dayRaw] = date.match(/^(\d{4})-(\d{2})-(\d{2})$/) || []
+  const [, , monthRaw, dayRaw] = date.match(/^(\d{4})-(\d{2})-(\d{2})$/) || []
   const month = Number(monthRaw)
   const day = Number(dayRaw)
-  const dateHeader = new RegExp(`^${month}月${day}日`)
-  const start = lines.findIndex((line) => dateHeader.test(line))
+  const dateHeader = new RegExp(`^(?:${month}月${day}日|${month}\/${day}(?:\\s|\\(|$))`)
+  const cleaned = cleanCPBLSourceLines(lines)
+  const scheduleListIndex = cleaned.findIndex((line) => line.includes('賽程列表'))
+  const starts = cleaned
+    .map((line, index) => ({ line, index }))
+    .filter(({ line, index }) => dateHeader.test(line) && (scheduleListIndex < 0 || index >= scheduleListIndex))
+
+  const start = starts.length > 0
+    ? starts[starts.length - 1].index
+    : cleaned.findIndex((line) => dateHeader.test(line))
+
   if (start < 0) return []
 
-  let end = lines.length
-  for (let i = start + 1; i < lines.length; i++) {
-    if (/^\d{1,2}月\d{1,2}日/.test(lines[i])) {
+  let end = cleaned.length
+  for (let i = start + 1; i < cleaned.length; i++) {
+    if (isCPBLDateLine(cleaned[i]) || /^##\s*第/.test(cleaned[i]) || cleaned[i] === '社群連結') {
       end = i
       break
     }
   }
 
-  const block = lines.slice(start, end)
+  const block = cleaned.slice(start, end)
   const games: GameRecord[] = []
 
   for (let i = 0; i < block.length; i++) {
     const gameLine = block[i]
-    const gameMatch = gameLine.match(/^GAME\s*(\d+)\s*(已結束|未開始|進行中|延賽|取消|保留|比賽暫停)?/)
+    const gameMatch = gameLine.match(/^GAME\s*(\d+)\s*(已結束|未開始|進行中|比賽中|延賽|取消|保留|比賽暫停)?/)
     if (!gameMatch) continue
 
     const gameNo = gameMatch[1]
     const status = normalizeStatus(gameMatch[2] || '')
-    let j = i + 1
+    let cursor = i + 1
 
-    const awayTeam = findNext(block, j, (line) => CPBL_TEAMS.includes(line))
+    const awayTeam = findNextCPBLTeam(block, cursor)
     if (!awayTeam) continue
-    j = awayTeam.index + 1
+    cursor = awayTeam.index + 1
 
-    const scoreLine = findNext(block, j, (line) => /^\d+\s*:\s*\d+$/.test(line) || /^vs$/i.test(line))
+    const scoreLine = findNextCPBLValue(block, cursor, (line) => /^\d+\s*:\s*\d+$/.test(line) || /^vs$/i.test(line))
     if (!scoreLine) continue
-    j = scoreLine.index + 1
+    cursor = scoreLine.index + 1
 
     let awayScore: number | null = null
     let homeScore: number | null = null
@@ -384,18 +503,33 @@ function parseCPBLFromLines(lines: string[], date: string, season: number): Game
       const [a, h] = scoreLine.value.split(':').map((v) => toNumber(v.trim()))
       awayScore = a
       homeScore = h
-      const stadiumLine = findNext(block, j, (line) => !CPBL_TEAMS.includes(line) && !/^GAME/.test(line) && !/^\d+-\d+-\d+$/.test(line) && line !== '成績看板')
+
+      const stadiumLine = findNextCPBLValue(block, cursor, (line) => (
+        !isCPBLTeamLine(line)
+        && !isCPBLRecordLine(line)
+        && !/^GAME/.test(line)
+        && !/^成績看板$/.test(line)
+        && !/^共\s*\d+\s*場$/.test(line)
+      ))
       stadium = stadiumLine?.value || ''
-      if (stadiumLine) j = stadiumLine.index + 1
+      if (stadiumLine) cursor = stadiumLine.index + 1
     } else {
-      const stadiumLine = block[j] || ''
-      stadium = stadiumLine
-      const timeLine = block[j + 1] || ''
-      gameTime = /^\d{1,2}:\d{2}$/.test(timeLine) ? timeLine : ''
-      j += gameTime ? 2 : 1
+      const stadiumLine = findNextCPBLValue(block, cursor, (line) => (
+        !isCPBLTeamLine(line)
+        && !isCPBLRecordLine(line)
+        && !/^GAME/.test(line)
+        && !/^成績看板$/.test(line)
+        && !/^\d{1,2}:\d{2}$/.test(line)
+      ))
+      stadium = stadiumLine?.value || ''
+      if (stadiumLine) cursor = stadiumLine.index + 1
+
+      const timeLine = findNextCPBLValue(block, cursor, (line) => /^\d{1,2}:\d{2}$/.test(line))
+      gameTime = timeLine ? normalizeCPBLTime(timeLine.value) : ''
+      if (timeLine) cursor = timeLine.index + 1
     }
 
-    const homeTeam = findNext(block, j, (line) => CPBL_TEAMS.includes(line))
+    const homeTeam = findNextCPBLTeam(block, cursor)
     if (!homeTeam) continue
 
     games.push(normalizeGame({
@@ -415,7 +549,7 @@ function parseCPBLFromLines(lines: string[], date: string, season: number): Game
     }))
   }
 
-  return uniqueGames(games)
+  return uniqueGames([...games, ...parseCPBLCompactBlock(block, date, season)])
 }
 
 function parseCPBLOfficialText(lines: string[], date: string, season: number): GameRecord[] {
@@ -461,6 +595,7 @@ async function fetchCPBLGames(date: string): Promise<GameRecord[]> {
   const month = Number(date.slice(5, 7))
 
   const urls = [
+    `https://stats.cpbl.com.tw/schedule?date=${date}`,
     `https://stats.cpbl.com.tw/schedule?year=${season}&month=${month}`,
     `https://stats.cpbl.com.tw/schedule`,
     `https://cpbl.com.tw/schedule?year=${season}&month=${month}`,
