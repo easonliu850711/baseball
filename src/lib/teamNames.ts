@@ -164,15 +164,34 @@ const TEAM_NAME_ZH: Record<string, string> = {
   台鋼雄鷹: '台鋼雄鷹',
 }
 
+function removeCjkInnerSpaces(value: string): string {
+  let text = value.replace(/\s+/g, ' ').trim()
+
+  // HTML extraction sometimes splits Chinese/Japanese team names, e.g. 「北海 道日本火腿鬥士」.
+  // Keep normal English spaces, but remove spaces that are between CJK characters.
+  while (/([぀-ヿ㐀-鿿])\s+([぀-ヿ㐀-鿿])/.test(text)) {
+    text = text.replace(/([぀-ヿ㐀-鿿])\s+([぀-ヿ㐀-鿿])/g, '$1$2')
+  }
+
+  return text
+}
+
 export function getTeamDisplayName(raw?: string | null): string {
-  const text = String(raw || '').replace(/\s+/g, ' ').trim()
+  const text = removeCjkInnerSpaces(String(raw || ''))
   if (!text) return ''
-  if (TEAM_NAME_ZH[text]) return TEAM_NAME_ZH[text]
+  if (TEAM_NAME_ZH[text]) return removeCjkInnerSpaces(TEAM_NAME_ZH[text])
+
+  const compactText = text.replace(/\s+/g, '')
+  if (TEAM_NAME_ZH[compactText]) return removeCjkInnerSpaces(TEAM_NAME_ZH[compactText])
 
   const lower = text.toLowerCase()
+  const compactLower = compactText.toLowerCase()
   const matchedKey = Object.keys(TEAM_NAME_ZH)
     .sort((a, b) => b.length - a.length)
-    .find((key) => lower.includes(key.toLowerCase()))
+    .find((key) => {
+      const keyLower = key.toLowerCase()
+      return lower.includes(keyLower) || compactLower.includes(keyLower.replace(/\s+/g, ''))
+    })
 
-  return matchedKey ? TEAM_NAME_ZH[matchedKey] : text
+  return removeCjkInnerSpaces(matchedKey ? TEAM_NAME_ZH[matchedKey] : text)
 }

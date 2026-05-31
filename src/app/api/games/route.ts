@@ -278,15 +278,30 @@ async function fetchNPBGames(date: string): Promise<GameRecord[]> {
   return parseNPBScheduledLines(lines, date, season)
 }
 
-function parseKBOHeader(line: string): { away: string; home: string; awayScore: number | null; homeScore: number | null; status: GameStatus; time: string } | null {
-  const teamRe = KBO_TEAMS.join('|')
-  const normalized = line
+type KBOParsedHeader = {
+  away: string
+  home: string
+  awayScore: number | null
+  homeScore: number | null
+  status: GameStatus
+  time: string
+  stadium?: string
+}
+
+function cleanKBOText(value: string): string {
+  return value
     .replace(/Image:\s*[A-Za-z0-9_-]+/gi, ' ')
+    .replace(/\bTEAM\s+1\s+2\s+3\s+4\s+5\s+6\s+7\s+8\s+9\s+10\s+11\s+12\s+13\s+14\s+15\s+R\s+H\s+E\s+B\b/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim()
+}
+
+function parseKBOHeader(line: string): KBOParsedHeader | null {
+  const teamRe = KBO_TEAMS.join('|')
+  const normalized = cleanKBOText(line)
 
   const liveOrFinal = normalized.match(
-    new RegExp(`(?:^|\\s)(${teamRe})\\s+(\\d+)\\s+((?:TOP|BOT|MID|END)\\s*\\d+(?:ST|ND|RD|TH)?|FINAL(?:/\\d+)?|GAME OVER|CANCELED|POSTPONED|RAINED OUT|SUSPENDED)\\s+(\\d+)\\s+(${teamRe})(?:\\s|$)`, 'i')
+    new RegExp(`(?:^|\\s)(${teamRe})\\s+(\\d+)\\s+((?:TOP|BOT|MID|END)\\s*\\d+(?:ST|ND|RD|TH)?|FINAL(?:/\\d+)?|GAME OVER|CANCELED|CANCELLED|POSTPONED|RAINED OUT|SUSPENDED)\\s+(\\d+)\\s+(${teamRe})(?:\\s|$)`, 'i')
   )
   if (liveOrFinal) {
     return {
@@ -299,7 +314,7 @@ function parseKBOHeader(line: string): { away: string; home: string; awayScore: 
     }
   }
 
-  const scheduled = normalized.match(new RegExp(`(?:^|\\s)(${teamRe})\\s+(VS|\\d{1,2}:\\d{2})\\s+(${teamRe})(?:\\s|$)`, 'i'))
+  const scheduled = normalized.match(new RegExp(`(?:^|\\s)(${teamRe})\\s+(VS|:|\\d{1,2}:\\d{2})\\s+(${teamRe})(?:\\s|$)`, 'i'))
   if (!scheduled) return null
 
   return {
@@ -308,26 +323,119 @@ function parseKBOHeader(line: string): { away: string; home: string; awayScore: 
     awayScore: null,
     homeScore: null,
     status: 'scheduled',
-    time: scheduled[2].toUpperCase() === 'VS' ? '' : scheduled[2],
+    time: /^\d{1,2}:\d{2}$/.test(scheduled[2]) ? scheduled[2] : '',
   }
+}
+
+function parseKBOScoreboardText(lines: string[], date: string, season: number): GameRecord[] {
+  const teamRe = KBO_TEAMS.join('|')
+  const text = cleanKBOText(lines.join(' '))
+  const headerRe = new RegExp(`(${teamRe})\\s+(\\d+)\\s+((?:TOP|BOT|MID|END)\\s*\\d+(?:ST|ND|RD|TH)?|FINAL(?:/\\d+)?|GAME OVER|CANCELED|CANCELLED|POSTPONED|RAINED OUT|SUSPENDED)\\s+(\\d+)\\s+(${teamRe})`, 'gi')
+  const matches: RegExpExecArray[] = []
+  let headerMatch: RegExpExecArray | null
+
+  while ((headerMatch = headerRe.exec(text)) !== null) {
+    matches.push(headerMatch)
+  }
+
+  const games: GameRecord[] = []
+
+  for (let i = 0; i < matches.length; i++) {
+    const match = matches[i]
+    const nextIndex = matches[i + 1]?.index ?? text.length
+    const after = text.slice((match.index ?? 0) + match[0].length, nextIndex)
+    const venueMatch = after.match(/\b([A-Z][A-Z0-9 ]{2,30}?)\s+(\d{1,2}:\d{2})(?:\s|$)/)
+
+    games.push(normalizeGame({
+      id: `KBO-${date}-${match[1].toUpperCase()}-${match[5].toUpperCase()}`,
+      league: 'KBO',
+      season,
+      game_date: date,
+      away_team: match[1].toUpperCase(),
+      home_team: match[5].toUpperCase(),
+      away_score: toNumber(match[2]),
+      home_score: toNumber(match[4]),
+      stadium: venueMatch?.[1]?.trim() || '',
+      status: normalizeStatus(match[3]),
+      game_time: venueMatch?.[2] || '',
+      source: 'KBO official scoreboard',
+    }))
+  }
+
+  return uniqueGames(games)
+}
+
+function parseKBODailySchedule(lines: string[], date: string, season: number): GameRecord[] {
+  const [, monthRaw, dayRaw] = date.match(/^\d{4}-(\d{2})-(\d{2})$/) || []
+  const month = Number(monthRaw)
+  const day = Number(dayRaw)
+  if (!month || !day) return []
+
+  const teamRe = KBO_TEAMS.join('|')
+  const datePrefix = `${String(month).padStart(2, '0')}.${String(day).padStart(2, '0')}`
+  const gameRe = new RegExp(`^(?:(\\d{2}\\.\\d{2})\\([A-Z]{3}\\)\\s+REGULAR\\s+)?(\\d{1,2}:\\d{2})\\s+(${teamRe})\\s+(?:(\\d+)\\s*:\\s*(\\d+)|:)\\s+(${teamRe})\\b`, 'i')
+  const games: GameRecord[] = []
+  let inDate = false
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = cleanKBOText(lines[i])
+    const explicitDate = line.match(/^(\d{2}\.\d{2})\([A-Z]{3}\)/)
+
+    if (explicitDate) {
+      inDate = explicitDate[1] === datePrefix
+    }
+
+    if (!inDate) continue
+
+    const match = line.match(gameRe)
+    if (!match) continue
+
+    const away = match[3].toUpperCase()
+    const home = match[6].toUpperCase()
+    const awayScore = toNumber(match[4])
+    const homeScore = toNumber(match[5])
+    const venueLine = cleanKBOText(lines[i + 1] || '')
+    const isPostponed = /POSTPONED|RAINED OUT/i.test(venueLine)
+    const stadium = venueLine.replace(/\s+(?:-|POSTPONED|RAINED OUT|CANCELED|CANCELLED).*$/i, '').trim()
+
+    games.push(normalizeGame({
+      id: `KBO-${date}-${away}-${home}`,
+      league: 'KBO',
+      season,
+      game_date: date,
+      away_team: away,
+      home_team: home,
+      away_score: awayScore,
+      home_score: homeScore,
+      stadium,
+      status: isPostponed ? 'postponed' : (awayScore !== null && homeScore !== null ? 'finished' : 'scheduled'),
+      game_time: match[2],
+      source: 'KBO daily schedule',
+    }))
+  }
+
+  return uniqueGames(games)
 }
 
 async function fetchKBOGames(date: string): Promise<GameRecord[]> {
   const season = seasonFromDate(date)
-  const url = `https://eng.koreabaseball.com/Schedule/Scoreboard.aspx?searchDate=${date}`
-  const lines = textLines(await fetchText(url))
-  const games: GameRecord[] = []
+  const scoreboardUrl = `https://eng.koreabaseball.com/Schedule/Scoreboard.aspx?searchDate=${date}`
+  const scoreboardLines = textLines(await fetchText(scoreboardUrl))
 
-  for (let i = 0; i < lines.length; i++) {
-    const header = parseKBOHeader(lines[i])
+  const scoreboardGames = parseKBOScoreboardText(scoreboardLines, date, season)
+  if (scoreboardGames.length > 0) return scoreboardGames
+
+  const lineGames: GameRecord[] = []
+  for (let i = 0; i < scoreboardLines.length; i++) {
+    const header = parseKBOHeader(scoreboardLines[i])
     if (!header) continue
 
-    const venueLine = lines[i + 1] || ''
-    const venueMatch = venueLine.match(/^(.+?)\s+(\d{1,2}:\d{2})$/)
-    const stadium = venueMatch ? venueMatch[1] : venueLine
+    const venueLine = cleanKBOText(scoreboardLines[i + 1] || '')
+    const venueMatch = venueLine.match(/^(.+?)\s+(\d{1,2}:\d{2})/)
+    const stadium = venueMatch ? venueMatch[1] : venueLine.replace(/\s+(?:-|W:|S:|L:).*$/i, '').trim()
     const time = header.time || venueMatch?.[2] || ''
 
-    games.push(normalizeGame({
+    lineGames.push(normalizeGame({
       id: `KBO-${date}-${header.away}-${header.home}`,
       league: 'KBO',
       season,
@@ -342,8 +450,11 @@ async function fetchKBOGames(date: string): Promise<GameRecord[]> {
       source: 'KBO official scoreboard',
     }))
   }
+  if (lineGames.length > 0) return uniqueGames(lineGames)
 
-  return uniqueGames(games)
+  // Fallback: the KBO daily schedule page exposes the whole month as simple text.
+  const dailyLines = textLines(await fetchText('https://eng.koreabaseball.com/Schedule/DailySchedule.aspx'))
+  return parseKBODailySchedule(dailyLines, date, season)
 }
 
 function cleanCPBLSourceLines(lines: string[]): string[] {
