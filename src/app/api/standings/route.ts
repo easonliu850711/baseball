@@ -12,6 +12,55 @@ const LEAGUE_META: Record<string, { icon: string; title: string }> = {
   NPB_CENTRAL: { icon: '🏔️', title: '央聯 セ・リーグ' },
   NPB_PACIFIC: { icon: '🌊', title: '洋聯 パ・リーグ' },
   CPBL: { icon: '🐉', title: '中華職棒' },
+  MLB_AL: { icon: '🇺🇸', title: 'MLB 美國聯盟' },
+  MLB_NL: { icon: '🇺🇸', title: 'MLB 國家聯盟' },
+  KBO: { icon: '🇰🇷', title: 'KBO 韓國職棒' },
+}
+
+const MLB_SHORT: Record<string, string> = {
+  'Rays': '光芒',
+  'Yankees': '洋基',
+  'Red Sox': '紅襪',
+  'Blue Jays': '藍鳥',
+  'Orioles': '金鶯',
+  'Guardians': '守護者',
+  'Twins': '雙城',
+  'Tigers': '老虎',
+  'White Sox': '白襪',
+  'Royals': '皇家',
+  'Astros': '太空人',
+  'Mariners': '水手',
+  'Angels': '天使',
+  'Athletics': '運動家',
+  'Rangers': '遊騎兵',
+  'Braves': '勇士',
+  'Phillies': '費城人',
+  'Mets': '大都會',
+  'Nationals': '國民',
+  'Marlins': '馬林魚',
+  'Brewers': '釀酒人',
+  'Cubs': '小熊',
+  'Cardinals': '紅雀',
+  'Reds': '紅人',
+  'Pirates': '海盜',
+  'Dodgers': '道奇',
+  'Padres': '教士',
+  'Giants': '巨人(MLB)',
+  'Diamondbacks': '響尾蛇',
+  'Rockies': '落磯',
+}
+
+const KBO_SHORT: Record<string, string> = {
+  'Kia Tigers': '起亞虎',
+  'Samsung Lions': '三星獅',
+  'LG Twins': 'LG雙子',
+  'Doosan Bears': '斗山熊',
+  'SSG Landers': 'SSG登陸者',
+  'KT Wiz': 'KT巫師',
+  'NC Dinos': 'NC恐龍',
+  'Lotte Giants': '樂天巨人',
+  'Hanwha Eagles': '韓華鷹',
+  'Kiwoom Heroes': '培證英雄',
 }
 
 const NPB_TEAM_SHORT: Record<string, string> = {
@@ -247,6 +296,137 @@ export async function GET(request: Request) {
     ])
   }
 
+  async function scrapeMLB(): Promise<any[]> {
+  try {
+    const [alData, nlData] = await Promise.all([
+      fetch('https://statsapi.mlb.com/api/v1/standings?leagueId=103&season=' + SEASON + '&standingsTypes=regularSeason', {
+        headers: { 'User-Agent': 'Mozilla/5.0' },
+        cache: 'no-store',
+        signal: AbortSignal.timeout(15000),
+      }).then(r => r.json()),
+      fetch('https://statsapi.mlb.com/api/v1/standings?leagueId=104&season=' + SEASON + '&standingsTypes=regularSeason', {
+        headers: { 'User-Agent': 'Mozilla/5.0' },
+        cache: 'no-store',
+        signal: AbortSignal.timeout(15000),
+      }).then(r => r.json()),
+    ])
+
+    const result: any[] = []
+
+    for (const records of [alData.records, nlData.records]) {
+      for (const div of records) {
+        const teams = div.teamRecords.map((t: any) => {
+          const name = t.team.name
+          const shortName = MLB_SHORT[name] || name
+          const w = t.leagueRecord.wins
+          const l = t.leagueRecord.losses
+          const d = t.leagueRecord.ties || 0
+          const pct = t.leagueRecord.pct
+          const g = t.gamesPlayed
+          return buildRow(0, name, [String(g), String(w), String(l), String(d), pct, t.gamesBack])
+        }).filter((r: StandingRow | null) => r && r.games > 0)
+
+        // Re-rank within each division
+        teams.forEach((t: StandingRow, i: number) => {
+          t.team_name = MLB_SHORT[t.team_name] || t.team_name
+          t.rank = i + 1
+        })
+
+        if (teams.length > 0) {
+          // Determine which league: if any team matches AL teams
+          const alTeams = ['光芒','洋基','紅襪','藍鳥','金鶯','守護者','雙城','老虎','白襪','皇家','太空人','水手','天使','運動家','遊騎兵']
+          const isAL = teams.some((t: StandingRow) => alTeams.includes(t.team_name))
+          result.push({
+            league: isAL ? LEAGUE_META.MLB_AL.title : LEAGUE_META.MLB_NL.title,
+            icon: isAL ? LEAGUE_META.MLB_AL.icon : LEAGUE_META.MLB_NL.icon,
+            teams: teams.map(normalizeTeam),
+          })
+        }
+      }
+    }
+
+    return result
+  } catch (err) {
+    console.error('[standings][mlb] scrape failed:', err)
+    return []
+  }
+}
+
+async function scrapeKBO(): Promise<any[]> {
+  try {
+    // KBO data from Wikipedia (no official public API available)
+    const res = await fetch(
+      'https://en.wikipedia.org/w/api.php?action=parse&page=' + SEASON + '_KBO_League_season&prop=text&format=json',
+      {
+        headers: { 'User-Agent': 'StudioImoriBot/1.0 (baseball.studio-imori.com)' },
+        cache: 'no-store',
+        signal: AbortSignal.timeout(15000),
+      }
+    )
+    const data = await res.json()
+    const html = data?.parse?.text?.['*'] || ''
+
+    // Find the regular season standings table (second wikitable with 11+ columns)
+    const tables = html.match(/<table[^>]*class="[^"]*wikitable[^"]*"[^>]*>[\s\S]*?<\/table>/g) || []
+    
+    for (const tableHtml of tables) {
+      const rows = tableHtml.match(/<tr>[\s\S]*?<\/tr>/g) || []
+      if (rows.length < 5) continue
+
+      const teams: StandingRow[] = []
+      const seen = new Set<string>()
+
+      for (let i = 1; i < rows.length; i++) {
+        const cellMatches = Array.from(String(rows[i]).matchAll(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/gi))
+        const cells = cellMatches.map((m: RegExpExecArray) => cleanText(m[1])).filter(Boolean)
+
+        // Need at least rank + team + W + L + D + PCT
+        if (cells.length < 8) continue
+
+        const rank = Number.parseInt(cells[0], 10)
+        const rawTeam = cells[1]
+        if (!Number.isFinite(rank) || rank < 1 || rank > 10) continue
+
+        const team = KBO_SHORT[rawTeam]
+        if (!team || seen.has(team)) continue
+
+        const gp = Number.parseInt(cells[2], 10)
+        const w = Number.parseInt(cells[3], 10)
+        const l = Number.parseInt(cells[4], 10)
+        const d = Number.parseInt(cells[5], 10)
+        const pct = cells[6] || '.000'
+        const gb = normalizeGb(cells[7] || '-')
+
+        if (!Number.isFinite(gp) || gp <= 0) continue
+
+        teams.push({
+          rank, team_name: team,
+          games: gp, wins: w, losses: l, draws: d,
+          win_pct: pct, games_back: gb,
+          color: 'text-gray-400',
+          stadium: '',
+        })
+        seen.add(team)
+      }
+
+      // Regular season: teams have 50+ GP, spring training has 12 GP
+      const isRegularSeason = teams.every((t: StandingRow) => t.games >= 40)
+      if (teams.length >= 8 && isRegularSeason) {
+        return [{
+          league: LEAGUE_META.KBO.title,
+          icon: LEAGUE_META.KBO.icon,
+          teams: teams.map(normalizeTeam),
+        }]
+      }
+    }
+
+    return []
+  } catch (err) {
+    console.error('[standings][kbo] scrape failed:', err)
+    return []
+  }
+}
+
   if (league === 'cpbl') {
     // 先讀 DB cache
     try {
@@ -284,6 +464,24 @@ export async function GET(request: Request) {
     return Response.json([
       { league: LEAGUE_META.CPBL.title, icon: LEAGUE_META.CPBL.icon, teams: (FALLBACK as any).CPBL.map(normalizeTeam) },
     ])
+  }
+
+  if (league === 'mlb') {
+    const scraped = await scrapeMLB()
+    const fallback = (FALLBACK as any).MLB
+    if (scraped.length > 0) {
+      return Response.json(scraped)
+    }
+    return Response.json(fallback || [])
+  }
+
+  if (league === 'kbo') {
+    const scraped = await scrapeKBO()
+    const fallback = (FALLBACK as any).KBO
+    if (scraped.length > 0) {
+      return Response.json(scraped)
+    }
+    return Response.json(fallback || [])
   }
 
   return Response.json([])

@@ -21,15 +21,14 @@ async function crawlCPBL(year = 2026) {
     CREATE TABLE IF NOT EXISTS games (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       league TEXT NOT NULL DEFAULT 'CPBL',
+      season INTEGER NOT NULL DEFAULT ${year},
       game_date TEXT NOT NULL,
       home_team TEXT,
       away_team TEXT,
       home_score INTEGER,
       away_score INTEGER,
-      stadium TEXT,
+      stadium_id TEXT,
       status TEXT DEFAULT 'scheduled',
-      game_time TEXT,
-      season INTEGER DEFAULT ${year},
       created_at TEXT DEFAULT (datetime('now')),
       updated_at TEXT DEFAULT (datetime('now'))
     )
@@ -41,8 +40,8 @@ async function crawlCPBL(year = 2026) {
 
   const insert = db.prepare(`
     INSERT OR REPLACE INTO games
-      (league, game_date, home_team, away_team, home_score, away_score, stadium, status, game_time, season)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (league, season, game_date, home_team, away_team, home_score, away_score, stadium_id, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `)
 
   const insertMany = db.transaction((games) => {
@@ -106,7 +105,7 @@ async function crawlCPBL(year = 2026) {
       }
 
       if (rows.length > 0) {
-        const dbRows = rows.map(r => ['CPBL', r[0], r[1], r[2], null, null, r[3], 'scheduled', '', year])
+        const dbRows = rows.map(r => ['CPBL', year, r[0], r[1], r[2], null, null, r[3], 'scheduled'])
         insertMany(dbRows)
         total += rows.length
         console.log(`     ✅ ${rows.length} 場寫入`)
