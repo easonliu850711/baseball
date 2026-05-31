@@ -289,7 +289,7 @@ export default function OverseasPlayers() {
         {/* ===== 待辦備註 ===== */}
         <div className="mt-4 text-center">
           <p className="text-[11px] text-stone-gray/40">
-            V1 — 基礎白名單顯示 · 下一步：自動爬取成績 · 新聞搜尋
+            V1 — 旅外球員資料庫 · 下一步：球員新聞與外部連結
           </p>
         </div>
       </div>

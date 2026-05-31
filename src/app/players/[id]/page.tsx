@@ -4,7 +4,17 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { ArrowLeft, Globe, Loader2, AlertCircle, User, Shield, Building2, Flame } from 'lucide-react'
+import { ArrowLeft, Globe, Loader2, AlertCircle, User, Shield, Building2, Flame, ExternalLink, Newspaper, Clock } from 'lucide-react'
+
+type NewsItem = {
+  id: number
+  player_id: string
+  title: string
+  url: string
+  source: string
+  published_at: string
+  summary: string
+}
 
 type Player = {
   player_id: string
@@ -60,6 +70,8 @@ export default function PlayerProfile() {
   const params = useParams()
   const id = params.id as string
   const [player, setPlayer] = useState<Player | null>(null)
+  const [news, setNews] = useState<NewsItem[]>([])
+  const [newsLoading, setNewsLoading] = useState(true)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -76,6 +88,15 @@ export default function PlayerProfile() {
         setError('找不到該選手')
         setLoading(false)
       })
+
+    // 載入新聞
+    fetch(`/api/news?player_id=${encodeURIComponent(id)}`)
+      .then(r => r.json())
+      .then(data => {
+        setNews(data.news || [])
+        setNewsLoading(false)
+      })
+      .catch(() => setNewsLoading(false))
   }, [id])
 
   if (loading) {
@@ -141,6 +162,55 @@ export default function PlayerProfile() {
                 <span className="text-[10px] text-stone-gray/50">{player.bats_throws}</span>
               </div>
             </div>
+          </div>
+
+          {/* ===== 相關新聞 ===== */}
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Newspaper className="w-5 h-5 text-ocean-wave" />
+              <h2 className="text-lg font-bold text-shell-white">最新消息</h2>
+              {newsLoading && <Loader2 className="w-3.5 h-3.5 text-stone-gray/40 animate-spin" />}
+            </div>
+
+            {!newsLoading && news.length === 0 && (
+              <div className="ocean-card p-6 rounded-xl border border-ocean-light/10 bg-ocean-mid/10 text-center">
+                <p className="text-sm text-stone-gray/50">目前尚無相關新聞</p>
+                <p className="text-[11px] text-stone-gray/40 mt-1">每日 23:30 自動更新</p>
+              </div>
+            )}
+
+            {!newsLoading && news.length > 0 && (
+              <div className="space-y-2">
+                {news.map((item) => (
+                  <a
+                    key={item.id}
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ocean-card p-4 rounded-xl border border-ocean-light/10 bg-ocean-mid/10 hover:border-ocean-wave/30 transition-all block group"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-shell-white group-hover:text-ocean-wave transition-colors line-clamp-2">
+                          {item.title}
+                        </p>
+                        {item.summary && (
+                          <p className="text-xs text-stone-gray/50 mt-1 line-clamp-2">{item.summary}</p>
+                        )}
+                        <div className="flex items-center gap-3 mt-2">
+                          <span className="text-[10px] text-stone-gray/40">{item.source}</span>
+                          <span className="text-[10px] text-stone-gray/30 flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {item.published_at.slice(0, 10)}
+                          </span>
+                        </div>
+                      </div>
+                      <ExternalLink className="w-4 h-4 text-stone-gray/30 group-hover:text-ocean-wave shrink-0 mt-1" />
+                    </div>
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* ===== 詳細資訊 ===== */}

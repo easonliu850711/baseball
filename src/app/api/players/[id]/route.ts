@@ -45,9 +45,9 @@ function loadPlayers(): Player[] {
 // GET /api/players/[id] — single player profile
 export async function GET(
   _request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await params
+  const { id } = params
   const players = loadPlayers()
   const player = players.find(p => p.player_id === id)
 
