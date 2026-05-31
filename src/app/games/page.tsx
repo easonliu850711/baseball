@@ -20,15 +20,49 @@ type Game = {
   stadium: string
   status: string
   game_time: string
+  source?: string
+  game_pk?: string
+}
+
+function todayInTaipei() {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Taipei',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date())
+
+  const y = parts.find(p => p.type === 'year')?.value || ''
+  const m = parts.find(p => p.type === 'month')?.value || ''
+  const d = parts.find(p => p.type === 'day')?.value || ''
+  return `${y}-${m}-${d}`
+}
+
+function statusLabel(status: string) {
+  const map: Record<string, string> = {
+    scheduled: '未開始',
+    live: '進行中',
+    finished: '已結束',
+    postponed: '延賽',
+    cancelled: '取消',
+    reserved: '保留',
+    suspended: '暫停',
+  }
+  return map[status] || status
+}
+
+function statusClass(status: string) {
+  if (status === 'finished') return 'bg-stone-gray/20 text-stone-gray'
+  if (status === 'live') return 'bg-coral/20 text-coral'
+  if (['postponed', 'cancelled', 'reserved', 'suspended'].includes(status)) return 'bg-yellow-500/20 text-yellow-300'
+  return 'bg-ocean-wave/20 text-ocean-wave'
 }
 
 export default function GamesPage() {
   const [games, setGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
   const [activeLeague, setActiveLeague] = useState<League | 'ALL'>('ALL')
-  const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().slice(0, 10)
-  )
+  const [selectedDate, setSelectedDate] = useState(todayInTaipei)
 
   async function fetchGames(date: string, league: string) {
     setLoading(true)
@@ -86,7 +120,7 @@ export default function GamesPage() {
             <span className="text-gradient">今日賽程</span>
           </h1>
           <p className="text-stone-gray max-w-xl mx-auto">
-            NPB · MLB · CPBL · KBO 即時賽程一手掌握
+            選擇聯盟與日期，即時顯示 NPB · MLB · CPBL · KBO 賽程與賽果
           </p>
         </motion.div>
 
@@ -173,7 +207,7 @@ export default function GamesPage() {
                   <div className="space-y-3">
                     {lgGames.map((game) => (
                       <div
-                        key={game.id}
+                        key={`${game.league}-${game.game_date}-${game.game_pk || game.id}-${game.away_team}-${game.home_team}`}
                         className="ocean-card p-4 rounded-xl border border-ocean-light/20 bg-ocean-mid/20 hover:border-ocean-light/40 transition-all group"
                       >
                         <div className="flex items-center justify-between">
@@ -191,6 +225,9 @@ export default function GamesPage() {
                               <span className="flex items-center gap-1">
                                 <Clock className="w-3 h-3" /> {game.game_time || '未定'}
                               </span>
+                              {game.source && (
+                                <span className="hidden sm:inline text-stone-gray/35">{game.source}</span>
+                              )}
                             </div>
                           </div>
 
@@ -201,8 +238,8 @@ export default function GamesPage() {
                                 {game.away_score} - {game.home_score}
                               </div>
                             ) : (
-                              <div className="text-xs px-3 py-1 rounded-full bg-ocean-wave/20 text-ocean-wave">
-                                {game.status === 'scheduled' ? '未開始' : game.status}
+                              <div className={`text-xs px-3 py-1 rounded-full ${statusClass(game.status)}`}>
+                                {statusLabel(game.status)}
                               </div>
                             )}
                           </div>
