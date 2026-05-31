@@ -47,6 +47,7 @@ const MLB_SHORT: Record<string, string> = {
   'Padres': '教士',
   'Giants': '巨人(MLB)',
   'Diamondbacks': '響尾蛇',
+  'D-backs': '響尾蛇',
   'Rockies': '落磯',
 }
 
@@ -167,7 +168,7 @@ function buildRow(rank: number, rawTeam: string, values: string[]): StandingRow 
   const wins = Number.parseInt(values[1] || '0', 10)
   const losses = Number.parseInt(values[2] || '0', 10)
   const draws = Number.parseInt(values[3] || '0', 10)
-  const pct = values[4] || '.000'
+  const pct = (values[4] || '.000').trim()
   const gb = normalizeGb(values[5] || '-')
 
   if (!Number.isFinite(games) || games <= 0) return null
@@ -316,26 +317,23 @@ export async function GET(request: Request) {
     for (const records of [alData.records, nlData.records]) {
       for (const div of records) {
         const teams = div.teamRecords.map((t: any) => {
-          const name = t.team.name
-          const shortName = MLB_SHORT[name] || name
+          const name = MLB_SHORT[t.team.name] || t.team.name
+          const g = t.gamesPlayed
           const w = t.leagueRecord.wins
           const l = t.leagueRecord.losses
           const d = t.leagueRecord.ties || 0
-          const pct = t.leagueRecord.pct
-          const g = t.gamesPlayed
-          return buildRow(0, name, [String(g), String(w), String(l), String(d), pct, t.gamesBack])
-        }).filter((r: StandingRow | null) => r && r.games > 0)
+          const pct = (t.leagueRecord.pct || '').trim()
+          const gb = normalizeGb(t.gamesBack)
+          return { rank: 0, team_name: name, games: g, wins: w, losses: l, draws: d, win_pct: pct, games_back: gb, color: 'text-gray-400', stadium: '' }
+        }).filter((r: any) => r && r.games > 0)
 
         // Re-rank within each division
-        teams.forEach((t: StandingRow, i: number) => {
-          t.team_name = MLB_SHORT[t.team_name] || t.team_name
-          t.rank = i + 1
-        })
+        teams.forEach((t: any, i: number) => { t.rank = i + 1 })
 
         if (teams.length > 0) {
           // Determine which league: if any team matches AL teams
           const alTeams = ['光芒','洋基','紅襪','藍鳥','金鶯','守護者','雙城','老虎','白襪','皇家','太空人','水手','天使','運動家','遊騎兵']
-          const isAL = teams.some((t: StandingRow) => alTeams.includes(t.team_name))
+          const isAL = teams.some((t: any) => alTeams.includes(t.team_name))
           result.push({
             league: isAL ? LEAGUE_META.MLB_AL.title : LEAGUE_META.MLB_NL.title,
             icon: isAL ? LEAGUE_META.MLB_AL.icon : LEAGUE_META.MLB_NL.icon,
@@ -394,7 +392,7 @@ async function scrapeKBO(): Promise<any[]> {
         const w = Number.parseInt(cells[3], 10)
         const l = Number.parseInt(cells[4], 10)
         const d = Number.parseInt(cells[5], 10)
-        const pct = cells[6] || '.000'
+        const pct = (cells[6] || '.000').trim()
         const gb = normalizeGb(cells[7] || '-')
 
         if (!Number.isFinite(gp) || gp <= 0) continue
