@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { ArrowLeft, Globe, Search, Filter, RefreshCw, AlertCircle, ExternalLink, ChevronDown, Loader2 } from 'lucide-react'
 
 type Player = {
@@ -218,8 +219,11 @@ export default function OverseasPlayers() {
                     layout
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="ocean-card group p-4 rounded-xl border border-ocean-light/20 bg-ocean-mid/20 hover:border-ocean-wave/40 transition-all"
                   >
+                    <Link
+                      href={`/players/${player.player_id}`}
+                      className="ocean-card group p-4 rounded-xl border border-ocean-light/20 bg-ocean-mid/20 hover:border-ocean-wave/40 transition-all block cursor-pointer"
+                    >
                     <div className="flex items-start gap-3">
                       {/* 頭像 */}
                       <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-ocean-wave to-emerald-400 flex items-center justify-center text-white font-bold text-base shrink-0">
@@ -242,6 +246,7 @@ export default function OverseasPlayers() {
                         </div>
                       </div>
                     </div>
+                    </Link>
                   </motion.div>
                 ))}
               </div>
