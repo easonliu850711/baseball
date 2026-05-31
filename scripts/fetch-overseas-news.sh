@@ -1,18 +1,16 @@
 #!/bin/bash
 # 旅外球員新聞爬蟲 — 台灣主機 cron 專用
-# 每天 23:30 JST 執行
-#
 # Usage:
 #   bash scripts/fetch-overseas-news.sh
 #
 # 環境變數:
-#   SYNC_TOKEN  — API auth token (Authorization Bearer)
+#   SYNC_TOKEN  — API auth token
 #   BASE_URL    — 預設 baseball-stg.studio-imori.com
-#
-# ⚠️ TEMPORARY: 28 位球員名單目前 hardcode 在腳本內
-#    TODO: 之後改為讀取 src/data/overseas-players.json
 
 set -euo pipefail
+
+export PYTHONUTF8=1
+export PYTHONIOENCODING=utf-8
 
 BASE_URL="${BASE_URL:-https://baseball-stg.studio-imori.com}"
 SYNC_TOKEN="${SYNC_TOKEN:-}"
@@ -22,9 +20,15 @@ if [ -z "$SYNC_TOKEN" ]; then
   exit 1
 fi
 
-# ── 28 位旅外球員搜尋關鍵詞 ──────────────────────────
-# TEMPORARY: 正式版請改從 src/data/overseas-players.json 讀取
-#   格式: player_id|name_zh|搜尋關鍵詞
+PYTHON_BIN="$(command -v python3 || command -v python || true)"
+
+if [ -z "$PYTHON_BIN" ]; then
+  echo "ERROR: python3/python is not available"
+  exit 1
+fi
+
+echo "Using Python: $PYTHON_BIN"
+
 QUERIES=(
   "deng-kai-wei|鄧愷威|鄧愷威 旅美 棒球"
   "lee-hao-yu|李灝宇|李灝宇 老虎 旅美"
@@ -56,15 +60,7 @@ QUERIES=(
   "wang-yen-cheng|王彥程|王彥程 韓華 旅韓"
 )
 
-# ── 新聞來源 RSS ───────────────────────────────────
-NEWS_SOURCES=(
-  "https://www.ettoday.net/news/news-list-7-0.xml"     # ETtoday 體育
-  "https://cdn.tsna.tw/rss"                              # TSNA
-  "https://feeds.feedburner.com/sportsltn"                # 自由體育
-)
-
-# ── 主流程 ─────────────────────────────────────────
-TMPDIR=$(mktemp -d)
+TMPDIR="$(mktemp -d)"
 trap 'rm -rf "$TMPDIR"' EXIT
 
 NEWS_ARR="$TMPDIR/news_array.json"
@@ -75,51 +71,82 @@ for entry in "${QUERIES[@]}"; do
 
   echo "=== Searching: $name ($pid) ==="
 
-  # URL encode 關鍵詞
-  ENCODED_KEYWORDS=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$keywords'))")
+  ENCODED_KEYWORDS="$("$PYTHON_BIN" -c "import sys, urllib.parse; print(urllib.parse.quote(sys.argv[1]))" "$keywords")"
   RSS_URL="https://news.google.com/rss/search?q=${ENCODED_KEYWORDS}&hl=zh-TW&gl=TW&ceid=TW:zh-Hant"
 
-  # 抓 RSS → 解析（最多 3 筆）
-  RESULTS=$(curl -sL --max-time 10 "$RSS_URL" 2>/dev/null | \
-    python3 -c "
-import sys, xml.etree.ElementTree as ET, json
+  RSS_FILE="$TMPDIR/rss-$pid.xml"
+  RESULT_FILE="$TMPDIR/result-$pid.json"
+
+  curl -sL --max-time 10 \
+    -A "Mozilla/5.0 (compatible; StudioImoriBot/1.0)" \
+    "$RSS_URL" > "$RSS_FILE" || true
+
+  "$PYTHON_BIN" -c "
+import sys, xml.etree.ElementTree as ET, json, os
+
+pid = sys.argv[1]
+rss_path = sys.argv[2]
 
 try:
-    tree = ET.parse(sys.stdin)
+    if not os.path.exists(rss_path) or os.path.getsize(rss_path) == 0:
+        print('[]')
+        sys.exit(0)
+
+    tree = ET.parse(rss_path)
     root = tree.getroot()
     items = []
+
     for item in root.findall('.//item')[:3]:
         title = item.findtext('title', '')
         link = item.findtext('link', '')
         src = item.findtext('source', '')
         pub = item.findtext('pubDate', '')
+
         if title and link:
             items.append({
-                'player_id': '$pid',
+                'player_id': pid,
                 'title': title.strip(),
                 'url': link.strip(),
                 'source': src.strip() if src else '',
                 'published_at': pub.strip() if pub else '',
                 'summary': ''
             })
-    print(json.dumps(items, ensure_ascii=False))
-" 2>/dev/null) || RESULTS='[]'
 
-  # 合併
-  python3 -c "
-import json
-with open('$NEWS_ARR') as f:
+    print(json.dumps(items, ensure_ascii=True))
+except Exception as e:
+    print('PARSE_ERROR:', e, file=sys.stderr)
+    print('[]')
+" "$pid" "$RSS_FILE" > "$RESULT_FILE"
+
+  FOUND="$("$PYTHON_BIN" -c "import json, sys; print(len(json.load(open(sys.argv[1], encoding='utf-8'))))" "$RESULT_FILE")"
+  echo "Found: $FOUND"
+
+  "$PYTHON_BIN" -c "
+import json, sys, os
+
+news_path = sys.argv[1]
+result_path = sys.argv[2]
+
+if not os.path.exists(news_path):
+    with open(news_path, 'w', encoding='utf-8') as f:
+        f.write('[]')
+
+with open(news_path, encoding='utf-8') as f:
     body = json.load(f)
-body.extend(json.loads('''$RESULTS'''))
-with open('$NEWS_ARR', 'w') as f:
+
+with open(result_path, encoding='utf-8') as f:
+    results = json.load(f)
+
+body.extend(results)
+
+with open(news_path, 'w', encoding='utf-8') as f:
     json.dump(body, f, ensure_ascii=False, indent=2)
-"
+" "$NEWS_ARR" "$RESULT_FILE"
 
   sleep 1
 done
 
-# 統計
-TOTAL=$(python3 -c "import json; print(len(json.load(open('$NEWS_ARR'))))")
+TOTAL="$("$PYTHON_BIN" -c "import json, sys; print(len(json.load(open(sys.argv[1], encoding='utf-8'))))" "$NEWS_ARR")"
 echo "=== Total news found: $TOTAL ==="
 
 if [ "$TOTAL" -eq 0 ]; then
@@ -127,12 +154,27 @@ if [ "$TOTAL" -eq 0 ]; then
   exit 0
 fi
 
-# POST 到 baseball API（外層包 { news: [...] }）
+POST_BODY="$TMPDIR/post_body.json"
+
+"$PYTHON_BIN" -c "
+import json, sys
+
+news_path = sys.argv[1]
+post_path = sys.argv[2]
+
+with open(news_path, encoding='utf-8') as f:
+    news = json.load(f)
+
+with open(post_path, 'w', encoding='utf-8') as f:
+    json.dump({'news': news}, f, ensure_ascii=False)
+" "$NEWS_ARR" "$POST_BODY"
+
 echo "=== POST to $BASE_URL/api/sync/news ==="
+
 curl -s -X POST "$BASE_URL/api/sync/news" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $SYNC_TOKEN" \
-  -d "{ \"news\": $(cat "$NEWS_ARR") }" | python3 -m json.tool
+  --data-binary "@$POST_BODY" | "$PYTHON_BIN" -m json.tool
 
 echo ""
 echo "=== Done ==="
