@@ -1,20 +1,25 @@
 #!/bin/bash
-# 旅外球員新聞爬蟲 — 台灣主機 cron 專用
-# 每天 23:30 JST 執行
+# ─────────────────────────────────────────────
+# 旅外球員新聞同步腳本 (Production sync job)
+# ─────────────────────────────────────────────
+#
+# 用途: 抓取 Google News RSS → POST 到 baseball PROD
+# 部署: 台灣主機 crontab，每日 2 次
+# 手動測試: BASE_URL=https://baseball-stg.studio-imori.com bash scripts/fetch-overseas-news.sh
 #
 # Usage:
-#   bash scripts/fetch-overseas-news.sh
+#   SYNC_TOKEN=xxx bash scripts/fetch-overseas-news.sh
 #
 # 環境變數:
-#   SYNC_TOKEN  — API auth token (Authorization Bearer)
-#   BASE_URL    — 預設 baseball-stg.studio-imori.com
+#   SYNC_TOKEN  — API auth token (必填, Authorization Bearer)
+#   BASE_URL    — 預設 baseball.studio-imori.com (可手動覆蓋)
 #
 # ⚠️ TEMPORARY: 28 位球員名單目前 hardcode 在腳本內
 #    TODO: 之後改為讀取 src/data/overseas-players.json
 
 set -euo pipefail
 
-BASE_URL="${BASE_URL:-https://baseball-stg.studio-imori.com}"
+BASE_URL="${BASE_URL:-https://baseball.studio-imori.com}"
 SYNC_TOKEN="${SYNC_TOKEN:-}"
 
 if [ -z "$SYNC_TOKEN" ]; then
