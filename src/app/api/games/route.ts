@@ -35,6 +35,11 @@ const NPB_TEAMS = [
   'Fighters', 'Eagles',
 ]
 
+
+const NPB_JP_RESULT_KEYWORDS = [
+  '試合終了', '試合中', '試合前', '中止', 'ノーゲーム', 'コールド', '終了',
+]
+
 const KBO_TEAMS = ['KIA', 'LG', 'KT', 'KIWOOM', 'LOTTE', 'NC', 'DOOSAN', 'SAMSUNG', 'SSG', 'HANWHA']
 
 const CPBL_TEAMS = ['統一7-ELEVEn獅', '樂天桃猿', '台鋼雄鷹', '中信兄弟', '味全龍', '富邦悍將']
@@ -257,25 +262,99 @@ function parseNPBScheduledLines(lines: string[], date: string, season: number): 
       stadium,
       status: 'scheduled',
       game_time: time,
-      source: 'NPB.jp',
+      source: 'NPB.jp schedule',
     }))
   }
 
   return uniqueGames(games)
 }
 
+type NPBJapaneseScore = {
+  homeScore: number | null
+  awayScore: number | null
+  stadium: string
+  status: GameStatus
+  rawStatus: string
+}
+
+function parseNPBJapaneseScoreLines(lines: string[]): NPBJapaneseScore[] {
+  const scores: NPBJapaneseScore[] = []
+
+  for (const rawLine of lines) {
+    const line = rawLine.replace(/\s+/g, ' ').trim()
+    const scoreMatch = line.match(/^(\d+)\s*-\s*(\d+)\s*[（(]([^）)]+)[）)]\s*(.+)$/)
+    if (!scoreMatch) continue
+
+    const rawStatus = scoreMatch[4].trim()
+    if (!NPB_JP_RESULT_KEYWORDS.some((keyword) => rawStatus.includes(keyword)) && !/\d+回/.test(rawStatus)) continue
+
+    scores.push({
+      homeScore: toNumber(scoreMatch[1]),
+      awayScore: toNumber(scoreMatch[2]),
+      stadium: scoreMatch[3].trim(),
+      status: normalizeNPBJapaneseStatus(rawStatus),
+      rawStatus,
+    })
+  }
+
+  return scores
+}
+
+function normalizeNPBJapaneseStatus(rawStatus: string): GameStatus {
+  if (/試合終了|終了|コールド/.test(rawStatus)) return 'finished'
+  if (/中止|ノーゲーム/.test(rawStatus)) return 'cancelled'
+  if (/延期/.test(rawStatus)) return 'postponed'
+  if (/試合前/.test(rawStatus)) return 'scheduled'
+  if (/\d+回|試合中/.test(rawStatus)) return 'live'
+  return normalizeStatus(rawStatus)
+}
+
+function mergeNPBJapaneseScores(scheduledGames: GameRecord[], jpScores: NPBJapaneseScore[]): GameRecord[] {
+  if (scheduledGames.length === 0 || jpScores.length === 0) return scheduledGames
+
+  return scheduledGames.map((game, index) => {
+    const score = jpScores[index]
+    if (!score) return game
+
+    return normalizeGame({
+      ...game,
+      home_score: score.homeScore,
+      away_score: score.awayScore,
+      stadium: game.stadium || score.stadium,
+      status: score.status,
+      source: score.status === 'scheduled' ? 'NPB.jp schedule' : 'NPB.jp live results',
+    })
+  })
+}
+
 async function fetchNPBGames(date: string): Promise<GameRecord[]> {
   const season = seasonFromDate(date)
   const compact = date.replace(/-/g, '')
-  const url = `https://npb.jp/bis/eng/${season}/games/gm${compact}.html`
-  const html = await fetchText(url)
-  const lines = textLines(html)
-  const text = lines.join(' ')
+  const englishUrl = `https://npb.jp/bis/eng/${season}/games/gm${compact}.html`
+  const englishHtml = await fetchText(englishUrl)
+  const englishLines = textLines(englishHtml)
+  const englishText = englishLines.join(' ')
 
-  const finished = parseNPBFinishedText(text, date, season)
+  const finished = parseNPBFinishedText(englishText, date, season)
   if (finished.length > 0) return finished
 
-  return parseNPBScheduledLines(lines, date, season)
+  const scheduled = parseNPBScheduledLines(englishLines, date, season)
+
+  // NPB English daily page often keeps showing the pre-game schedule even after final.
+  // The Japanese daily page exposes the same games in the same order and includes live/final scores.
+  try {
+    const japaneseUrl = `https://npb.jp/bis/${season}/games/gm${compact}.html`
+    const japaneseLines = textLines(await fetchText(japaneseUrl))
+    const jpScores = parseNPBJapaneseScoreLines(japaneseLines)
+    const merged = mergeNPBJapaneseScores(scheduled, jpScores)
+    if (merged.some((game) => game.home_score !== null || game.away_score !== null || game.status !== 'scheduled')) {
+      return merged
+    }
+  } catch (error) {
+    console.warn('[games][NPB] Japanese live result fallback failed:', error)
+  }
+
+  return scheduled
 }
 
 type KBOParsedHeader = {
@@ -701,6 +780,90 @@ function findNext(lines: string[], start: number, predicate: (line: string) => b
   return null
 }
 
+
+function formatCPBLDate(y: string | number, m: string | number, d: string | number): string {
+  return `${String(y).padStart(4, '0')}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+}
+
+function cpblCandidateGameNos(seedGames: GameRecord[]): number[] {
+  const seedNos = seedGames
+    .map((game) => Number(game.game_pk || String(game.id || '').match(/(\d+)$/)?.[1] || NaN))
+    .filter((no) => Number.isFinite(no) && no > 0) as number[]
+
+  if (seedNos.length === 0) return []
+
+  const min = Math.max(1, Math.min(...seedNos) - 8)
+  const max = Math.max(...seedNos) + 10
+  const result: number[] = []
+
+  for (let no = min; no <= max; no++) result.push(no)
+  return result
+}
+
+function parseCPBLDetailLines(lines: string[], date: string, season: number, gameNo: number): GameRecord | null {
+  const cleaned = cleanCPBLSourceLines(lines)
+  const text = cleaned.join(' ').replace(/\s+/g, ' ').trim()
+  if (!text) return null
+
+  const detailDate = text.match(/(20\d{2})\/(\d{1,2})\/(\d{1,2})\s*星期/)
+  if (!detailDate) return null
+
+  const actualDate = formatCPBLDate(detailDate[1], detailDate[2], detailDate[3])
+  if (actualDate !== date) return null
+
+  const title = text.match(new RegExp(`(${CPBL_TEAM_RE})\\s*vs\\.?\\s*(${CPBL_TEAM_RE})\\s*賽事詳情`, 'i'))
+  if (!title) return null
+
+  const awayTeam = title[1]
+  const homeTeam = title[2]
+  const scoreMatch = text.match(new RegExp(`${escapeRegExp(awayTeam)}\\s+(?:\\d+-\\d+-\\d+\\s+)?(\\d+)\\s*:\\s*(\\d+)\\s+([^\\s]+).*?${escapeRegExp(homeTeam)}(?:\\s+\\d+-\\d+-\\d+)?`, 'i'))
+  const noScoreMatch = text.match(new RegExp(`${escapeRegExp(awayTeam)}\\s+(?:\\d+-\\d+-\\d+\\s+)?(?:vs|VS\\.?)\\s+.*?${escapeRegExp(homeTeam)}(?:\\s+\\d+-\\d+-\\d+)?`, 'i'))
+
+  const explicitStatus = text.match(/一軍例行賽\s+(進行中|已結束|未開始|延賽|取消|保留|比賽暫停)/)?.[1]
+  const statusText = [scoreMatch?.[3] || '', explicitStatus || '']
+    .filter(Boolean)
+    .join(' ')
+
+  const stadiumMatch = text.match(new RegExp(`${actualDate.replace(/-/g, '\\/').replace(/\/0/g, '/')}\\s*星期[^\\s]*\\s+([^\\s]+)`, 'i'))
+    || text.match(/20\d{2}\/\d{1,2}\/\d{1,2}\s*星期[^\s]*\s+([^\s]+)/i)
+  const timeMatch = text.match(/(?:^|\s)(\d{1,2}:\d{2})(?:\s|$)/)
+  const hasScore = Boolean(scoreMatch)
+
+  if (!hasScore && !noScoreMatch) return null
+
+  return normalizeGame({
+    id: `CPBL-${date}-${gameNo}`,
+    league: 'CPBL',
+    season,
+    game_date: date,
+    away_team: awayTeam,
+    home_team: homeTeam,
+    away_score: hasScore ? toNumber(scoreMatch?.[1]) : null,
+    home_score: hasScore ? toNumber(scoreMatch?.[2]) : null,
+    stadium: stadiumMatch?.[1] || '',
+    status: normalizeStatus(statusText || (hasScore ? '進行中' : '未開始')),
+    game_time: timeMatch ? normalizeCPBLTime(timeMatch[1]) : '',
+    game_pk: String(gameNo),
+    source: 'CPBL live detail',
+  })
+}
+
+async function fetchCPBLDetailGames(date: string, season: number, seedGames: GameRecord[]): Promise<GameRecord[]> {
+  const candidateNos = cpblCandidateGameNos(seedGames)
+  if (candidateNos.length === 0) return []
+
+  const results = await Promise.allSettled(candidateNos.map(async (gameNo) => {
+    const url = `https://stats.cpbl.com.tw/schedule/${season}-A-${gameNo}`
+    const lines = textLines(await fetchText(url))
+    return parseCPBLDetailLines(lines, date, season, gameNo)
+  }))
+
+  return uniqueGames(results
+    .filter((result): result is PromiseFulfilledResult<GameRecord | null> => result.status === 'fulfilled')
+    .map((result) => result.value)
+    .filter((game): game is GameRecord => Boolean(game)))
+}
+
 async function fetchCPBLGames(date: string): Promise<GameRecord[]> {
   const season = seasonFromDate(date)
   const month = Number(date.slice(5, 7))
@@ -714,6 +877,7 @@ async function fetchCPBLGames(date: string): Promise<GameRecord[]> {
   ]
 
   let lastError: unknown
+  let scheduleSeed: GameRecord[] = []
 
   for (const url of urls) {
     try {
@@ -721,11 +885,27 @@ async function fetchCPBLGames(date: string): Promise<GameRecord[]> {
       const parsed = url.includes('stats.cpbl.com.tw')
         ? parseCPBLFromLines(lines, date, season)
         : parseCPBLOfficialText(lines, date, season)
-      if (parsed.length > 0) return parsed
+
+      if (parsed.length > 0 && scheduleSeed.length === 0) {
+        scheduleSeed = parsed
+      }
+
+      const detailGames = await fetchCPBLDetailGames(date, season, parsed)
+      if (detailGames.length > 0) return detailGames
+
+      // Only return schedule-list data when every game is clearly scheduled.
+      // If scores exist on the list page, it may be a stale previous-day block; keep looking for live detail pages first.
+      if (parsed.length > 0 && parsed.every((game) => game.status === 'scheduled')) {
+        return parsed
+      }
     } catch (err) {
       lastError = err
     }
   }
+
+  const detailFromSeed = await fetchCPBLDetailGames(date, season, scheduleSeed)
+  if (detailFromSeed.length > 0) return detailFromSeed
+  if (scheduleSeed.length > 0) return scheduleSeed
 
   if (lastError) throw lastError
   return []
@@ -752,16 +932,15 @@ function readDbFallback(date: string, league?: League): GameRecord[] {
   try {
     initSchema()
     const db = getDb()
-    const params: any[] = [date]
+    const params: any[] = [seasonFromDate(date), date]
     let sql = 'SELECT * FROM games WHERE season = ? AND game_date = ?'
-    params.unshift(seasonFromDate(date))
 
     if (league) {
       sql += ' AND league = ?'
       params.push(league)
     }
 
-    sql += ' ORDER BY league ASC, id ASC'
+    sql += " ORDER BY league ASC, COALESCE(game_time, '99:99') ASC, id ASC"
     const rows = db.prepare(sql).all(...params) as any[]
 
     return rows.map((row) => normalizeGame({
@@ -785,6 +964,57 @@ function readDbFallback(date: string, league?: League): GameRecord[] {
   }
 }
 
+function writeDbCache(date: string, league: League, games: GameRecord[]): boolean {
+  if (games.length === 0) return false
+
+  try {
+    initSchema()
+    const db = getDb()
+    const season = seasonFromDate(date)
+
+    const replaceForLeague = db.transaction((rows: GameRecord[]) => {
+      db.prepare('DELETE FROM games WHERE season = ? AND game_date = ? AND league = ?').run(season, date, league)
+
+      const insert = db.prepare(`
+        INSERT INTO games (
+          league, season, game_date,
+          home_team, away_team,
+          home_score, away_score,
+          status, stadium_id,
+          game_pk, updated_at
+        ) VALUES (
+          @league, @season, @game_date,
+          @home_team, @away_team,
+          @home_score, @away_score,
+          @status, @stadium_id,
+          @game_pk, datetime('now')
+        )
+      `)
+
+      for (const game of rows) {
+        insert.run({
+          league: game.league,
+          season: game.season || season,
+          game_date: game.game_date || date,
+          home_team: game.home_team,
+          away_team: game.away_team,
+          home_score: game.home_score,
+          away_score: game.away_score,
+          status: game.status,
+          stadium_id: game.stadium || '',
+          game_pk: game.game_pk || String(game.id || ''),
+        })
+      }
+    })
+
+    replaceForLeague(games)
+    return true
+  } catch (err) {
+    console.error(`[games][cache] ${league} ${date} write failed:`, err)
+    return false
+  }
+}
+
 function sortGames(games: GameRecord[]): GameRecord[] {
   const leagueOrder = new Map(LEAGUES.map((lg, idx) => [lg, idx]))
   return [...games].sort((a, b) => {
@@ -799,33 +1029,83 @@ export async function GET(request: Request) {
   const date = normalizeDate(searchParams.get('date'))
   const requestedLeague = normalizeLeague(searchParams.get('league'))
   const targetLeagues = requestedLeague ? [requestedLeague] : LEAGUES
+  const sourceMode = String(searchParams.get('source') || 'live').toLowerCase()
+  const fetchedAt = new Date().toISOString()
+
+  // Debug / emergency mode: /api/games?date=YYYY-MM-DD&source=cache
+  if (sourceMode === 'cache' || sourceMode === 'db') {
+    const cachedGames = sortGames(uniqueGames(readDbFallback(date, requestedLeague || undefined)))
+    return Response.json({
+      success: true,
+      date,
+      league: requestedLeague || 'ALL',
+      mode: 'cache',
+      data_source: 'SQLite cache',
+      fetched_at: fetchedAt,
+      games: cachedGames,
+      total: cachedGames.length,
+      errors: [],
+    }, {
+      headers: { 'Cache-Control': 'no-store, max-age=0' },
+    })
+  }
 
   const settled = await Promise.allSettled(
     targetLeagues.map(async (league) => ({ league, games: await fetchLeagueGames(league, date) }))
   )
 
   const errors: Array<{ league: League; message: string }> = []
+  const cache: Array<{ league: League; written: boolean; rows: number }> = []
   let games: GameRecord[] = []
+  let liveRows = 0
+  let fallbackRows = 0
 
   settled.forEach((result, index) => {
     const league = targetLeagues[index]
+
     if (result.status === 'fulfilled') {
-      games.push(...result.value.games)
+      const liveGames = result.value.games
+      liveRows += liveGames.length
+      games.push(...liveGames)
+
+      // Live first: every successful live fetch refreshes SQLite cache for fallback use.
+      const written = writeDbCache(date, league, liveGames)
+      cache.push({ league, written, rows: liveGames.length })
       return
     }
 
-    errors.push({ league, message: result.reason instanceof Error ? result.reason.message : String(result.reason) })
-    games.push(...readDbFallback(date, league))
+    const message = result.reason instanceof Error ? result.reason.message : String(result.reason)
+    errors.push({ league, message })
+
+    const fallbackGames = readDbFallback(date, league)
+    fallbackRows += fallbackGames.length
+    games.push(...fallbackGames)
   })
 
   games = sortGames(uniqueGames(games))
 
+  const dataSource = liveRows > 0 && fallbackRows > 0
+    ? 'live+fallback'
+    : liveRows > 0
+      ? 'live'
+      : fallbackRows > 0
+        ? 'fallback'
+        : 'empty'
+
   return Response.json({
-    success: errors.length === 0,
+    success: errors.length === 0 || games.length > 0,
     date,
     league: requestedLeague || 'ALL',
+    mode: 'live-first',
+    data_source: dataSource,
+    fetched_at: fetchedAt,
     games,
     total: games.length,
+    live_total: liveRows,
+    fallback_total: fallbackRows,
+    cache,
     errors,
+  }, {
+    headers: { 'Cache-Control': 'no-store, max-age=0' },
   })
 }
