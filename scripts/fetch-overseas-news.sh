@@ -6,12 +6,15 @@
 #   bash scripts/fetch-overseas-news.sh
 #
 # 環境變數:
-#   SYNC_TOKEN  — API auth token (設在 .env.local)
-#   BASE_URL    — 預設 https://baseball.studio-imori.com
+#   SYNC_TOKEN  — API auth token (Authorization Bearer)
+#   BASE_URL    — 預設 baseball-stg.studio-imori.com
+#
+# ⚠️ TEMPORARY: 28 位球員名單目前 hardcode 在腳本內
+#    TODO: 之後改為讀取 src/data/overseas-players.json
 
 set -euo pipefail
 
-BASE_URL="${BASE_URL:-https://baseball.studio-imori.com}"
+BASE_URL="${BASE_URL:-https://baseball-stg.studio-imori.com}"
 SYNC_TOKEN="${SYNC_TOKEN:-}"
 
 if [ -z "$SYNC_TOKEN" ]; then
@@ -19,8 +22,9 @@ if [ -z "$SYNC_TOKEN" ]; then
   exit 1
 fi
 
-# 28位旅外球員搜尋關鍵詞
-# 格式: player_id|name_zh|搜尋關鍵詞
+# ── 28 位旅外球員搜尋關鍵詞 ──────────────────────────
+# TEMPORARY: 正式版請改從 src/data/overseas-players.json 讀取
+#   格式: player_id|name_zh|搜尋關鍵詞
 QUERIES=(
   "deng-kai-wei|鄧愷威|鄧愷威 旅美 棒球"
   "lee-hao-yu|李灝宇|李灝宇 老虎 旅美"
@@ -52,30 +56,30 @@ QUERIES=(
   "wang-yen-cheng|王彥程|王彥程 韓華 旅韓"
 )
 
-# 台灣體育新聞來源 RSS
+# ── 新聞來源 RSS ───────────────────────────────────
 NEWS_SOURCES=(
   "https://www.ettoday.net/news/news-list-7-0.xml"     # ETtoday 體育
   "https://cdn.tsna.tw/rss"                              # TSNA
   "https://feeds.feedburner.com/sportsltn"                # 自由體育
 )
 
-# 暫存目錄
+# ── 主流程 ─────────────────────────────────────────
 TMPDIR=$(mktemp -d)
 trap 'rm -rf "$TMPDIR"' EXIT
 
-POST_BODY="$TMPDIR/news_payload.json"
-echo '[]' > "$POST_BODY"
+NEWS_ARR="$TMPDIR/news_array.json"
+echo '[]' > "$NEWS_ARR"
 
 for entry in "${QUERIES[@]}"; do
   IFS='|' read -r pid name keywords <<< "$entry"
 
   echo "=== Searching: $name ($pid) ==="
 
-  # 從 Google News RSS 搜尋
+  # URL encode 關鍵詞
   ENCODED_KEYWORDS=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$keywords'))")
   RSS_URL="https://news.google.com/rss/search?q=${ENCODED_KEYWORDS}&hl=zh-TW&gl=TW&ceid=TW:zh-Hant"
 
-  # 用 curl 抓 RSS (最多3筆)
+  # 抓 RSS → 解析（最多 3 筆）
   RESULTS=$(curl -sL --max-time 10 "$RSS_URL" 2>/dev/null | \
     python3 -c "
 import sys, xml.etree.ElementTree as ET, json
@@ -101,22 +105,21 @@ try:
     print(json.dumps(items, ensure_ascii=False))
 " 2>/dev/null) || RESULTS='[]'
 
-  # 合併到 payload
+  # 合併
   python3 -c "
 import json
-with open('$POST_BODY') as f:
+with open('$NEWS_ARR') as f:
     body = json.load(f)
 body.extend(json.loads('''$RESULTS'''))
-with open('$POST_BODY', 'w') as f:
+with open('$NEWS_ARR', 'w') as f:
     json.dump(body, f, ensure_ascii=False, indent=2)
 "
 
-  # 休息一下避免被封
   sleep 1
 done
 
 # 統計
-TOTAL=$(python3 -c "import json; print(len(json.load(open('$POST_BODY'))))")
+TOTAL=$(python3 -c "import json; print(len(json.load(open('$NEWS_ARR'))))")
 echo "=== Total news found: $TOTAL ==="
 
 if [ "$TOTAL" -eq 0 ]; then
@@ -124,12 +127,12 @@ if [ "$TOTAL" -eq 0 ]; then
   exit 0
 fi
 
-# POST 到 baseball API
+# POST 到 baseball API（外層包 { news: [...] }）
 echo "=== POST to $BASE_URL/api/sync/news ==="
 curl -s -X POST "$BASE_URL/api/sync/news" \
   -H "Content-Type: application/json" \
-  -H "x-api-key: $SYNC_TOKEN" \
-  -d @"$POST_BODY" | python3 -m json.tool
+  -H "Authorization: Bearer $SYNC_TOKEN" \
+  -d "{ \"news\": $(cat "$NEWS_ARR") }" | python3 -m json.tool
 
 echo ""
 echo "=== Done ==="
