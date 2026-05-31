@@ -1,7 +1,7 @@
 {
   "meta": {
     "last_updated": "2026-05-31",
-    "description": "Manual overrides for overseas player data."
+    "description": "Manual overrides for overseas player data. Keys match player_id in overseas-players.json."
   },
   "overrides": {
     "lee-hao-yu": {
@@ -11,9 +11,32 @@
       "confidence": "high",
       "needs_review": false
     },
-    "zeng-song-en": {
-      "needs_review": true,
-      "confidence": "medium"
+    "deng-kai-wei": {
+      "current_level": "MLB",
+      "team_name": "Houston Astros",
+      "roster_status": "Active",
+      "confidence": "high",
+      "needs_review": false
+    },
+    "cheng-tsung-che": {
+      "current_level": "MLB",
+      "organization": "Boston Red Sox",
+      "team_name": "Boston Red Sox",
+      "roster_status": "Active",
+      "confidence": "high",
+      "needs_review": false
+    },
+    "sun-yi-lei": {
+      "current_level": "2軍",
+      "roster_status": "支配下",
+      "needs_review": false,
+      "confidence": "high"
+    },
+    "lin-chia-cheng": {
+      "current_level": "1軍",
+      "roster_status": "支配下",
+      "needs_review": false,
+      "confidence": "high"
     }
   }
 }

@@ -418,20 +418,5 @@
     "bats_throws": "L/L",
     "confidence": "high",
     "needs_review": false
-  },
-  {
-    "player_id": "zeng-song-en",
-    "name_zh": "曾頌恩",
-    "name_en": "Song-En Tseng",
-    "country": "KR",
-    "league": "KBO",
-    "organization": "KBO",
-    "team_name": "KBO",
-    "current_level": "2軍",
-    "roster_status": "Active",
-    "position": "OF",
-    "bats_throws": "R/R",
-    "confidence": "medium",
-    "needs_review": true
   }
 ]
