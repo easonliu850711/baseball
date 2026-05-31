@@ -1,4 +1,9 @@
 import sys, json, urllib.request, urllib.parse, xml.etree.ElementTree as ET, os, time, subprocess
+import email.utils
+from datetime import datetime, timezone, timedelta
+
+MAX_DAYS = 7          # 只取 7 天內的新聞
+MAX_PER_PLAYER = 5    # 每人最多取 5 篇
 
 BASE_URL = os.environ.get('BASE_URL', 'http://localhost:4567')
 SYNC_TOKEN = os.environ.get('SYNC_TOKEN', '')
@@ -6,6 +11,8 @@ SYNC_TOKEN = os.environ.get('SYNC_TOKEN', '')
 if not SYNC_TOKEN:
     print("ERROR: SYNC_TOKEN is not set")
     sys.exit(1)
+
+CUTOFF = datetime.now(timezone.utc) - timedelta(days=MAX_DAYS)
 
 PLAYERS = [
     ("deng-kai-wei", "鄧愷威", "鄧愷威 巨人 旅美"),
@@ -55,13 +62,25 @@ for pid, name, kw in PLAYERS:
         tree = ET.parse(resp)
         root = tree.getroot()
         items = []
-        for item in root.findall('.//item')[:3]:
+        for item in root.findall('.//item'):
             title = item.findtext('title', '')
             link = item.findtext('link', '')
             src_el = item.find('source')
             src = src_el.text.strip() if src_el is not None and src_el.text else ''
             pub = item.findtext('pubDate', '')
+
+            # 日期過濾：只取 7 天內
+            if pub:
+                try:
+                    pub_dt = email.utils.parsedate_to_datetime(pub)
+                    if pub_dt < CUTOFF:
+                        continue  # 跳過太舊的
+                except:
+                    pass  # 日期解析失敗則保留
+
             if title and link:
+                if len(items) >= MAX_PER_PLAYER:
+                    break
                 items.append({
                     'player_id': pid,
                     'title': title.strip(),

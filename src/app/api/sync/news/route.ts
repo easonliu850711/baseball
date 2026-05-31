@@ -37,13 +37,20 @@ export async function POST(request: Request) {
 
     const body = await request.json()
 
-    if (!body.news?.length) {
-      return Response.json({ success: false, error: '缺少必要欄位 (news)' }, { status: 400 })
-    }
-
     // ── 確保資料表存在（含 UNIQUE index）──
     initSchema()
     const db = getDb()
+
+    // 可選：清空超過 N 天的新聞
+    if (body.clear_old_days && typeof body.clear_old_days === 'number') {
+      const cutoff = new Date(Date.now() - body.clear_old_days * 86400_000).toISOString()
+      db.prepare('DELETE FROM player_news WHERE published_at < ?').run(cutoff)
+      console.log(`Cleared news older than ${body.clear_old_days} days`)
+    }
+
+    if (!body.news?.length) {
+      return Response.json({ success: true, news_received: 0, news_inserted: 0, cleared: true })
+    }
 
     const insertStmt = db.prepare(`
       INSERT OR IGNORE INTO player_news (player_id, title, url, source, published_at, summary)
@@ -73,6 +80,7 @@ export async function POST(request: Request) {
       news_received: body.news.length,
       news_inserted: inserted,
       message: `${inserted} 篇新聞已同步（重複 ${body.news.length - inserted} 篇）`,
+      cleared_old_days: body.clear_old_days || 0,
     })
   } catch (err) {
     console.error('sync/news error:', err)
