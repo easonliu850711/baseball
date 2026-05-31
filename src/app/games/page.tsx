@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { ArrowLeft, Calendar, MapPin, Clock, Trophy, RefreshCw } from 'lucide-react'
+import { getTeamDisplayName } from '@/lib/teamNames'
 
 const LEAGUES = ['NPB', 'MLB', 'CPBL', 'KBO'] as const
 type League = (typeof LEAGUES)[number]
@@ -179,9 +180,9 @@ export default function GamesPage() {
                           {/* 客隊 vs 主隊 */}
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-1">
-                              <span className="text-sm font-medium text-shell-white">{game.away_team}</span>
+                              <span className="text-sm font-medium text-shell-white">{getTeamDisplayName(game.away_team)}</span>
                               <span className="text-xs text-stone-gray/40">@</span>
-                              <span className="text-sm font-medium text-shell-white">{game.home_team}</span>
+                              <span className="text-sm font-medium text-shell-white">{getTeamDisplayName(game.home_team)}</span>
                             </div>
                             <div className="flex items-center gap-3 text-xs text-stone-gray/50">
                               <span className="flex items-center gap-1">

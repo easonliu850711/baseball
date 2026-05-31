@@ -1,5 +1,6 @@
 import { getDb } from '@/lib/db'
 import { initSchema } from '@/lib/schema'
+import { getTeamDisplayName } from '@/lib/teamNames'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -31,6 +32,12 @@ export async function GET(request: Request) {
 
   sql += ' ORDER BY game_date DESC, league'
 
-  const rows = db.prepare(sql).all(...params)
-  return Response.json({ games: rows, total: rows.length })
+  const rows = db.prepare(sql).all(...params) as any[]
+  const games = rows.map((game) => ({
+    ...game,
+    home_team: getTeamDisplayName(game.home_team),
+    away_team: getTeamDisplayName(game.away_team),
+  }))
+
+  return Response.json({ games, total: games.length })
 }

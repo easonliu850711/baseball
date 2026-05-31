@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { getTeamDisplayName } from '@/lib/teamNames'
 
 const KBO_COLORS: Record<string, string> = {
   'SAMSUNG': 'text-blue-400',
@@ -38,7 +39,8 @@ export async function GET() {
       const rank = parseInt(clean[0])
       if (isNaN(rank) || rank < 1 || rank > 10) continue
 
-      const name = clean[1]
+      const rawName = clean[1]
+      const name = getTeamDisplayName(rawName)
       const g = parseInt(clean[2]) || 0
       const w = parseInt(clean[3]) || 0
       const l = parseInt(clean[4]) || 0
@@ -46,7 +48,7 @@ export async function GET() {
       const pct = clean[6]
       const gb = clean[7] === '0.0' ? '-' : clean[7]
 
-      teams.push({ rank, name, g, w, l, d, pct, gb, color: KBO_COLORS[name?.toUpperCase()] || 'text-gray-400' })
+      teams.push({ rank, name, g, w, l, d, pct, gb, color: KBO_COLORS[rawName?.toUpperCase()] || 'text-gray-400' })
     }
 
     return NextResponse.json({ league: 'KBO 聯賽', icon: '🇰🇷', teams })

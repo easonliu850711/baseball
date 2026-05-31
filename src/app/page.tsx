@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Trophy, ExternalLink, RefreshCw, BookOpen, Users, CalendarDays, MapPin, CheckCircle, Clock, DollarSign, Star, ArrowRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
+import { getTeamDisplayName } from '@/lib/teamNames'
 
 // ============================================================
 // 🏷️ 型別
@@ -59,7 +60,7 @@ async function fetchMLB(): Promise<MLBBlock[]> {
       const w = t.wins || 0, l = t.losses || 0
       return {
         rank: parseInt(t.divisionRank) || 0,
-        name: t.team?.name || '?',
+        name: getTeamDisplayName(t.team?.name || '?'),
         abbr: t.team?.abbreviation || '?',
         g: w + l, w, l, d: 0,
         pct: (w + l) > 0 ? `.${String(Math.round(w / (w + l) * 1000)).padStart(3, '0')}` : '.000',
@@ -152,7 +153,7 @@ export default function BaseballHome() {
             <td className={`py-2.5 pr-2 font-bold text-sm ${team.rank === 1 ? 'text-yellow-400' : team.rank <= 3 ? 'text-ocean-wave' : 'text-stone-gray/50'}`}>{team.rank}</td>
             <td className="py-2.5 pr-3 text-shell-white font-medium text-[13px]">
               {team.stadium && <span className="text-stone-gray/40 text-[10px] mr-1">🏟️</span>}
-              {team.name}
+              {getTeamDisplayName(team.name)}
             </td>
             <td className="text-center py-2.5 pr-2 text-stone-gray text-[13px]">{team.g}</td>
             <td className="text-center py-2.5 pr-2 text-emerald-400 font-medium text-[13px]">{team.w}</td>

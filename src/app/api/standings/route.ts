@@ -1,6 +1,7 @@
 import { getDb } from '@/lib/db'
 import { initSchema } from '@/lib/schema'
 import FALLBACK from './fallback.json'
+import { getTeamDisplayName } from '@/lib/teamNames'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -262,7 +263,7 @@ async function scrapeNPB(): Promise<{ central: StandingRow[]; pacific: StandingR
 function normalizeTeam(row: any) {
   return {
     rank: row.rank,
-    name: row.team_name,
+    name: getTeamDisplayName(row.team_name),
     g: row.games,
     w: row.wins,
     l: row.losses,
@@ -317,7 +318,7 @@ export async function GET(request: Request) {
     for (const records of [alData.records, nlData.records]) {
       for (const div of records) {
         const teams = div.teamRecords.map((t: any) => {
-          const name = MLB_SHORT[t.team.name] || t.team.name
+          const name = getTeamDisplayName(t.team.name)
           const g = t.gamesPlayed
           const w = t.leagueRecord.wins
           const l = t.leagueRecord.losses
@@ -385,7 +386,7 @@ async function scrapeKBO(): Promise<any[]> {
         const rawTeam = cells[1]
         if (!Number.isFinite(rank) || rank < 1 || rank > 10) continue
 
-        const team = KBO_SHORT[rawTeam]
+        const team = getTeamDisplayName(KBO_SHORT[rawTeam] || rawTeam)
         if (!team || seen.has(team)) continue
 
         const gp = Number.parseInt(cells[2], 10)

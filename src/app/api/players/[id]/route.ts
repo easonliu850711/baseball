@@ -29,7 +29,10 @@ interface OverrideFile {
 }
 
 function loadPlayers(): Player[] {
-  const raw = fs.readFileSync(path.join(DATA_DIR, 'overseas-players.json'), 'utf-8')
+  const playersPath = path.join(DATA_DIR, 'overseas-players.json')
+  if (!fs.existsSync(playersPath)) return []
+
+  const raw = fs.readFileSync(playersPath, 'utf-8')
   const players: Player[] = JSON.parse(raw)
   const overridePath = path.join(DATA_DIR, 'player-overrides.json')
   if (fs.existsSync(overridePath)) {
