@@ -41,6 +41,12 @@ export async function POST(request: Request) {
     initSchema()
     const db = getDb()
 
+    // 可選：清空所有新聞
+    if (body.clear_all === true) {
+      db.prepare('DELETE FROM player_news').run()
+      console.log('Cleared all player_news')
+    }
+
     // 可選：清空超過 N 天的新聞
     if (body.clear_old_days && typeof body.clear_old_days === 'number') {
       const cutoff = new Date(Date.now() - body.clear_old_days * 86400_000).toISOString()
@@ -80,6 +86,7 @@ export async function POST(request: Request) {
       news_received: body.news.length,
       news_inserted: inserted,
       message: `${inserted} 篇新聞已同步（重複 ${body.news.length - inserted} 篇）`,
+      cleared_all: body.clear_all === true,
       cleared_old_days: body.clear_old_days || 0,
     })
   } catch (err) {
