@@ -1,8 +1,19 @@
 {
   "meta": {
-    "last_updated": "2026-05-22",
-    "description": "手動覆寫表 — 優先於自動爬取結果。JSON key 為 player_id。"
+    "last_updated": "2026-05-31",
+    "description": "Manual overrides for overseas player data."
   },
   "overrides": {
+    "lee-hao-yu": {
+      "current_level": "MLB",
+      "team_name": "Detroit Tigers",
+      "roster_status": "Active",
+      "confidence": "high",
+      "needs_review": false
+    },
+    "zeng-song-en": {
+      "needs_review": true,
+      "confidence": "medium"
+    }
   }
 }
