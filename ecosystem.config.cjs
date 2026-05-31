@@ -8,8 +8,8 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         PORT: '3004',
-        SYNC_TOKEN: 'baseball-apikey-202605',
-        BASEBALL_DB_PATH: 'C:\\studio-imori\\baseball\\prod\\data\\baseball.db',
+        SYNC_TOKEN: process.env.SYNC_TOKEN,
+        BASEBALL_DB_PATH: process.env.BASEBALL_DB_PATH,
       },
     },
   ],

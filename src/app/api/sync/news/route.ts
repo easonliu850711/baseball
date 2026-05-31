@@ -13,6 +13,12 @@ interface NewsItem {
   summary?: string
 }
 
+/** 將各種日期格式轉為 ISO string，無效則 fallback 到當前時間 */
+function toIso(raw: string): string {
+  const ts = Date.parse(raw)
+  return Number.isNaN(ts) ? new Date().toISOString() : new Date(ts).toISOString()
+}
+
 export async function POST(request: Request) {
   try {
     const authHeader = request.headers.get('authorization')
@@ -28,11 +34,10 @@ export async function POST(request: Request) {
       return Response.json({ success: false, error: '缺少必要欄位 (news)' }, { status: 400 })
     }
 
-    // ── 確保資料表存在 ──
+    // ── 確保資料表存在（含 UNIQUE index）──
     initSchema()
     const db = getDb()
 
-    // ── 寫入新聞 ──
     const insertStmt = db.prepare(`
       INSERT OR IGNORE INTO player_news (player_id, title, url, source, published_at, summary)
       VALUES (?, ?, ?, ?, ?, ?)
@@ -41,12 +46,13 @@ export async function POST(request: Request) {
     let inserted = 0
     const insertMany = db.transaction((items: NewsItem[]) => {
       for (const item of items) {
+        const publishedAt = toIso(item.published_at)
         const result = insertStmt.run(
           item.player_id,
           item.title,
           item.url,
           item.source,
-          item.published_at,
+          publishedAt,
           item.summary || ''
         )
         if (result.changes > 0) inserted++

@@ -139,6 +139,7 @@ export function initSchema(): void {
     );
 
     CREATE INDEX IF NOT EXISTS idx_player_news_player ON player_news(player_id);
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_player_news_unique ON player_news(player_id, url);
     CREATE INDEX IF NOT EXISTS idx_player_news_date ON player_news(published_at);
 
     -- ================================================================
