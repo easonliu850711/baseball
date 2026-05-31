@@ -2,7 +2,7 @@ import sys, json, urllib.request, urllib.parse, xml.etree.ElementTree as ET, os,
 import email.utils
 from datetime import datetime, timezone, timedelta
 
-MAX_DAYS = 7          # 只取 7 天內的新聞
+MAX_DAYS = 30          # 只取 30 天內的新聞（確保每位球員都有新聞）
 MAX_PER_PLAYER = 5    # 每人最多取 5 篇
 
 BASE_URL = os.environ.get('BASE_URL', 'http://localhost:4567')
