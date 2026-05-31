@@ -267,7 +267,7 @@ function normalizeTeam(row: any) {
     w: row.wins,
     l: row.losses,
     d: row.draws,
-    pct: row.win_pct || row.pct || '.000',
+    pct: (row.win_pct || row.pct || '.000').trim(),
     gb: normalizeGb(row.games_back || row.gb || '-'),
     color: row.color || 'text-gray-400',
     stadium: row.stadium || '',
