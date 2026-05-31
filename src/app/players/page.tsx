@@ -3,13 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import { ArrowLeft, Globe, Search, Filter, RefreshCw, AlertCircle, ExternalLink, ChevronDown } from 'lucide-react'
-
-// ============================================================
-// 🌍 旅外選手白名單（全量快取）
-// ============================================================
-import allPlayers from '@/data/overseas-players.json'
-import overrides from '@/data/player-overrides.json'
+import { ArrowLeft, Globe, Search, Filter, RefreshCw, AlertCircle, ExternalLink, ChevronDown, Loader2 } from 'lucide-react'
 
 type Player = {
   player_id: string
@@ -84,30 +78,51 @@ function sortPlayers(players: Player[]): Player[] {
 
 export default function OverseasPlayers() {
   const [mounted, setMounted] = useState(false)
+  const [players, setPlayers] = useState<Player[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [levelFilter, setLevelFilter] = useState<string>('all')
-  const [showDiff, setShowDiff] = useState(false)
-  const [lastCheck, setLastCheck] = useState<string>('')
+  const [lastUpdated, setLastUpdated] = useState('')
 
-  useEffect(() => { setMounted(true); }, [])
+  useEffect(() => { setMounted(true) }, [])
+
+  // 從 API 載入
+  useEffect(() => {
+    setLoading(true)
+    fetch('/api/players')
+      .then(r => r.json())
+      .then(data => {
+        setPlayers(data.players)
+        setLastUpdated(data.meta?.last_updated || '')
+        setLoading(false)
+      })
+      .catch(err => {
+        setError('無法載入球員資料')
+        setLoading(false)
+      })
+  }, [])
 
   // 分國家
   const groups: CountryGroup[] = ['US', 'JP', 'KR'].map(country => ({
     country,
     ...getCountryMeta(country),
-    players: sortPlayers((allPlayers as Player[]).filter(p => p.country === country)),
+    players: sortPlayers(players.filter(p => p.country === country)),
   }))
 
   // 搜尋 + 篩選
   const filtered = groups.map(g => ({
     ...g,
     players: g.players.filter(p =>
-      (search === '' || p.name_zh.includes(search) || p.name_en.toLowerCase().includes(search.toLowerCase()) || p.organization.toLowerCase().includes(search.toLowerCase())) &&
+      (search === '' ||
+        p.name_zh.includes(search) ||
+        p.name_en.toLowerCase().includes(search.toLowerCase()) ||
+        p.organization.toLowerCase().includes(search.toLowerCase())) &&
       (levelFilter === 'all' || p.current_level === levelFilter || (levelFilter === '1軍' && p.current_level.includes('1軍')))
     ),
   }))
 
-  const allLevels = Array.from(new Set((allPlayers as Player[]).map(p => p.current_level))).sort((a, b) => {
+  const allLevels = Array.from(new Set(players.map(p => p.current_level))).sort((a, b) => {
     return (LEVEL_ORDER[a] ?? 99) - (LEVEL_ORDER[b] ?? 99)
   })
 
@@ -131,37 +146,52 @@ export default function OverseasPlayers() {
           </h1>
           <p className="text-lg text-stone-gray/80 max-w-2xl mx-auto mb-2">台灣囝仔 · 放眼世界</p>
           <p className="text-sm text-stone-gray/50">
-            {(allPlayers as Player[]).length} 位選手 · 追蹤最新動向
+            {players.length} 位選手 · 追蹤最新動向
           </p>
         </motion.div>
 
+        {/* ===== Loading / Error ===== */}
+        {loading && (
+          <div className="flex items-center justify-center py-24">
+            <Loader2 className="w-8 h-8 text-ocean-wave animate-spin" />
+          </div>
+        )}
+        {error && (
+          <div className="text-center py-12 bg-ocean-mid/10 rounded-xl border border-ocean-light/5">
+            <AlertCircle className="w-8 h-8 text-rose-400 mx-auto mb-2" />
+            <p className="text-sm text-rose-400/80">{error}</p>
+          </div>
+        )}
+
         {/* ===== 搜尋/篩選工具列 ===== */}
-        <div className="flex flex-col md:flex-row items-center gap-3 mb-8">
-          <div className="relative flex-1 w-full max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-gray/50" />
-            <input
-              type="text"
-              placeholder="搜尋選手姓名、球隊…"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-ocean-mid/30 border border-ocean-light/20 text-shell-white text-sm placeholder:text-stone-gray/40 focus:outline-none focus:border-ocean-wave/50 transition-colors"
-            />
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <Filter className="w-4 h-4 text-stone-gray/50" />
-            <button onClick={() => setLevelFilter('all')} className={`px-3 py-1.5 rounded-lg text-xs transition-all ${levelFilter === 'all' ? 'bg-ocean-wave/20 text-ocean-wave' : 'bg-ocean-mid/30 text-stone-gray/60 hover:text-shell-white'}`}>
-              全部
-            </button>
-            {allLevels.map(l => (
-              <button key={l} onClick={() => setLevelFilter(l)} className={`px-3 py-1.5 rounded-lg text-xs transition-all ${levelFilter === l ? 'bg-ocean-wave/20 text-ocean-wave' : 'bg-ocean-mid/30 text-stone-gray/60 hover:text-shell-white'}`}>
-                {l}
+        {!loading && !error && (
+          <div className="flex flex-col md:flex-row items-center gap-3 mb-8">
+            <div className="relative flex-1 w-full max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-gray/50" />
+              <input
+                type="text"
+                placeholder="搜尋選手姓名、球隊…"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-ocean-mid/30 border border-ocean-light/20 text-shell-white text-sm placeholder:text-stone-gray/40 focus:outline-none focus:border-ocean-wave/50 transition-colors"
+              />
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Filter className="w-4 h-4 text-stone-gray/50" />
+              <button onClick={() => setLevelFilter('all')} className={`px-3 py-1.5 rounded-lg text-xs transition-all ${levelFilter === 'all' ? 'bg-ocean-wave/20 text-ocean-wave' : 'bg-ocean-mid/30 text-stone-gray/60 hover:text-shell-white'}`}>
+                全部
               </button>
-            ))}
+              {allLevels.map(l => (
+                <button key={l} onClick={() => setLevelFilter(l)} className={`px-3 py-1.5 rounded-lg text-xs transition-all ${levelFilter === l ? 'bg-ocean-wave/20 text-ocean-wave' : 'bg-ocean-mid/30 text-stone-gray/60 hover:text-shell-white'}`}>
+                  {l}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* ===== 各國列表 ===== */}
-        {filtered.map((group, gi) => (
+        {!loading && !error && filtered.map((group, gi) => (
           <motion.section
             key={group.country}
             initial={{ opacity: 0, y: 20 }}
@@ -220,34 +250,36 @@ export default function OverseasPlayers() {
         ))}
 
         {/* ===== 系統資訊 ===== */}
-        <div className="mt-12 ocean-card p-5 rounded-xl border border-ocean-light/10 bg-ocean-deep/30">
-          <div className="flex items-center gap-2 mb-3">
-            <RefreshCw className="w-4 h-4 text-stone-gray/40" />
-            <span className="text-xs text-stone-gray/50">系統資訊</span>
+        {!loading && !error && (
+          <div className="mt-12 ocean-card p-5 rounded-xl border border-ocean-light/10 bg-ocean-deep/30">
+            <div className="flex items-center gap-2 mb-3">
+              <RefreshCw className="w-4 h-4 text-stone-gray/40" />
+              <span className="text-xs text-stone-gray/50">系統資訊</span>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+              <div>
+                <span className="text-stone-gray/40">白名單</span>
+                <p className="text-stone-gray/70">{players.length} 位</p>
+              </div>
+              <div>
+                <span className="text-stone-gray/40">分國家</span>
+                <p className="text-stone-gray/70">
+                  🇺🇸{players.filter(p => p.country === 'US').length}
+                   · 🇯🇵{players.filter(p => p.country === 'JP').length}
+                   · 🇰🇷{players.filter(p => p.country === 'KR').length}
+                </p>
+              </div>
+              <div>
+                <span className="text-stone-gray/40">資料源</span>
+                <p className="text-stone-gray/70">overseas-players.json</p>
+              </div>
+              <div>
+                <span className="text-stone-gray/40">更新</span>
+                <p className="text-stone-gray/70">{lastUpdated || 'N/A'}</p>
+              </div>
+            </div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-            <div>
-              <span className="text-stone-gray/40">白名單</span>
-              <p className="text-stone-gray/70">{(allPlayers as Player[]).length} 位</p>
-            </div>
-            <div>
-              <span className="text-stone-gray/40">分國家</span>
-              <p className="text-stone-gray/70">
-                🇺🇸{(allPlayers as Player[]).filter(p => p.country === 'US').length}
-                 · 🇯🇵{(allPlayers as Player[]).filter(p => p.country === 'JP').length}
-                 · 🇰🇷{(allPlayers as Player[]).filter(p => p.country === 'KR').length}
-              </p>
-            </div>
-            <div>
-              <span className="text-stone-gray/40">Override</span>
-              <p className="text-stone-gray/70">{Object.keys((overrides as any)?.overrides || {}).length} 筆</p>
-            </div>
-            <div>
-              <span className="text-stone-gray/40">更新</span>
-              <p className="text-stone-gray/70">2026-05-22</p>
-            </div>
-          </div>
-        </div>
+        )}
 
         {/* ===== 待辦備註 ===== */}
         <div className="mt-4 text-center">
