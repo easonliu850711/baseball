@@ -2,8 +2,9 @@ import sys, json, urllib.request, urllib.parse, xml.etree.ElementTree as ET, os,
 import email.utils
 from datetime import datetime, timezone, timedelta
 
-MAX_DAYS = 30          # 只取 30 天內的新聞（確保每位球員都有新聞）
+MAX_DAYS = 30          # 只取 30 天內的新聞
 MAX_PER_PLAYER = 5    # 每人最多取 5 篇
+CLEAR_OLD_DAYS = 90   # 同步時砍掉超過 N 天的新聞（汰舊換新）
 
 BASE_URL = os.environ.get('BASE_URL', 'http://localhost:4567')
 SYNC_TOKEN = os.environ.get('SYNC_TOKEN', '')
@@ -122,16 +123,17 @@ if not all_news:
     print("No news found, skipping POST")
     sys.exit(0)
 
-# POST
-body = json.dumps({"news": all_news}, ensure_ascii=False)
-print(f"=== POSTing {len(all_news)} articles to {BASE_URL}/api/sync/news ===")
+# POST — 含汰舊換新參數
+payload = {"news": all_news, "clear_old_days": CLEAR_OLD_DAYS}
+body = json.dumps(payload, ensure_ascii=False)
+print(f"=== POSTing {len(all_news)} articles to {BASE_URL}/api/sync/news (clear_old_days={CLEAR_OLD_DAYS}) ===")
 
 result = subprocess.run(
     ["curl", "-s", "-X", "POST", f"{BASE_URL}/api/sync/news",
      "-H", "Content-Type: application/json",
      "-H", "Authorization: Bearer " + SYNC_TOKEN,
      "-d", body],
-    capture_output=True, text=True, timeout=15
+    capture_output=True, text=True, timeout=30
 )
 
 print(f"Response: {result.stdout}")

@@ -1,72 +1,72 @@
 {
-  "timestamp": "2026-05-30T23:30:03.236876",
+  "timestamp": "2026-05-31T23:30:03.355068",
   "status": "success",
   "data_available": true,
-  "last_updated": "2026-05-30 23:30:03",
+  "last_updated": "2026-05-31 23:30:03",
   "standings": {
-    "timestamp": "2026-05-30T23:30:03.237211",
+    "timestamp": "2026-05-31T23:30:03.355468",
     "source_url": "https://www.cpbl.com.tw/standings/season",
-    "date": "2026-05-30",
+    "date": "2026-05-31",
     "teams": [
       {
         "rank": "1",
         "team_name": "味全龍",
-        "games_played": "43",
+        "games_played": "44",
         "wins": "29",
-        "losses": "14",
+        "losses": "15",
         "ties": "0",
-        "win_percentage": "0.674",
+        "win_percentage": "0.659",
         "games_behind": "-"
       },
       {
         "rank": "2",
         "team_name": "富邦悍將",
-        "games_played": "41",
+        "games_played": "42",
         "wins": "23",
-        "losses": "18",
+        "losses": "19",
         "ties": "0",
-        "win_percentage": "0.561",
+        "win_percentage": "0.548",
         "games_behind": "5"
       },
       {
         "rank": "3",
         "team_name": "台鋼雄鷹",
-        "games_played": "44",
+        "games_played": "45",
         "wins": "24",
-        "losses": "19",
+        "losses": "20",
         "ties": "1",
-        "win_percentage": "0.558",
+        "win_percentage": "0.545",
         "games_behind": "5"
       },
       {
         "rank": "4",
         "team_name": "統一7-ELEVEn獅",
-        "games_played": "43",
-        "wins": "20",
+        "games_played": "44",
+        "wins": "21",
         "losses": "22",
         "ties": "1",
-        "win_percentage": "0.476",
-        "games_behind": "8.5"
+        "win_percentage": "0.488",
+        "games_behind": "7.5"
       },
       {
         "rank": "5",
         "team_name": "樂天桃猿",
-        "games_played": "41",
-        "wins": "17",
+        "games_played": "42",
+        "wins": "18",
         "losses": "23",
         "ties": "1",
-        "win_percentage": "0.425",
-        "games_behind": "10.5"
+        "win_percentage": "0.439",
+        "games_behind": "9.5"
       },
       {
         "rank": "6",
         "team_name": "中信兄弟",
-        "games_played": "42",
-        "wins": "12",
+        "games_played": "43",
+        "wins": "13",
         "losses": "29",
         "ties": "1",
-        "win_percentage": "0.293",
-        "games_behind": "16"
+        "win_percentage": "0.31",
+        "games_behind": "15"
       }
     ]
   },
