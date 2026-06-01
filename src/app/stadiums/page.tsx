@@ -46,7 +46,7 @@ const TRANSPORT_PENDING = [
 const HOTEL_BOOKED = [
   { name: '6/12 レンブラントスタイル札幌', price: 11400 },
   { name: '6/13 バリュー・ザ・ホテル仙台名取', price: 7200 },
-  { name: '9/5 アパホテル広島駅前スタジアム', price: 8900 },
+  { name: '9/5 アパホテル広島駅前スタジアム', price: 6520 },
 ]
 
 const TOTAL_TRANSPORT_BOUGHT = TRANSPORT_BOUGHT.reduce((s, t) => s + t.price, 0)
