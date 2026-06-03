@@ -111,3 +111,4 @@ temp/
 data/*.db
 data/*.db-wal
 data/*.db-shm
+legacy/cpbl_final_data.json
