@@ -386,7 +386,7 @@ async function scrapeKBO(): Promise<any[]> {
         const rawTeam = cells[1]
         if (!Number.isFinite(rank) || rank < 1 || rank > 10) continue
 
-        const team = getTeamDisplayName(KBO_SHORT[rawTeam] || rawTeam)
+        const team = KBO_SHORT[rawTeam] || rawTeam
         if (!team || seen.has(team)) continue
 
         const gp = Number.parseInt(cells[2], 10)
@@ -411,10 +411,23 @@ async function scrapeKBO(): Promise<any[]> {
       // Regular season: teams have 50+ GP, spring training has 12 GP
       const isRegularSeason = teams.every((t: StandingRow) => t.games >= 40)
       if (teams.length >= 8 && isRegularSeason) {
+        // KBO: already has Chinese names from KBO_SHORT, skip normalizeTeam (which would
+        // re-run getTeamDisplayName and risk wrong substring matches like '巨人' in '樂天巨人')
         return [{
           league: LEAGUE_META.KBO.title,
           icon: LEAGUE_META.KBO.icon,
-          teams: teams.map(normalizeTeam),
+          teams: teams.map(t => ({
+            rank: t.rank,
+            name: t.team_name,
+            g: t.games,
+            w: t.wins,
+            l: t.losses,
+            d: t.draws,
+            pct: t.win_pct.trim(),
+            gb: normalizeGb(t.games_back || '-'),
+            color: t.color,
+            stadium: t.stadium,
+          })),
         }]
       }
     }
