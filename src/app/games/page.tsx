@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { ArrowLeft, Calendar, MapPin, Clock, Trophy, RefreshCw } from 'lucide-react'
 import { getTeamDisplayName } from '@/lib/teamNames'
+import { unwrapApiData } from '@/lib/api-response'
 
 const LEAGUES = ['NPB', 'MLB', 'CPBL', 'KBO'] as const
 type League = (typeof LEAGUES)[number]
@@ -73,7 +74,8 @@ export default function GamesPage() {
 
       const res = await fetch(`/api/games?${params}`)
       if (!res.ok) throw new Error('API error')
-      const data = await res.json()
+      const payload = await res.json()
+      const data = unwrapApiData<any>(payload)
       setGames(data.games || [])
     } catch (err) {
       console.error('Failed to fetch games:', err)

@@ -5,6 +5,7 @@ import { Trophy, ExternalLink, RefreshCw, BookOpen, Users, CalendarDays, MapPin,
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { getTeamDisplayName } from '@/lib/teamNames'
+import { unwrapApiData } from '@/lib/api-response'
 
 // ============================================================
 // 🏷️ 型別
@@ -40,45 +41,33 @@ const MLB_DIVISIONS: Record<number, { league: string; div: string; icon: string 
 async function fetchNPB(): Promise<LeagueBlock[]> {
   const res = await fetch('/api/standings?league=npb')
   if (!res.ok) throw new Error('NPB fetch failed')
-  return res.json()
+  return unwrapApiData<LeagueBlock[]>(await res.json())
 }
 
 async function fetchCPBL(): Promise<LeagueBlock[]> {
   const res = await fetch('/api/standings?league=cpbl')
   if (!res.ok) throw new Error('CPBL fetch failed')
-  return res.json()
+  return unwrapApiData<LeagueBlock[]>(await res.json())
 }
 
 async function fetchMLB(): Promise<MLBBlock[]> {
-  const res = await fetch('https://statsapi.mlb.com/api/v1/standings?leagueId=103,104&season=2026&standingsTypes=regularSeason')
-  const data = await res.json()
-  const records: any[] = data.records || []
-  return records.map((r: any) => {
-    const divId: number = r.division?.id || 200
-    const meta = MLB_DIVISIONS[divId] || { league: 'MLB', div: `Div ${divId}`, icon: '⚾' }
-    const teams = (r.teamRecords || []).map((t: any) => {
-      const w = t.wins || 0, l = t.losses || 0
-      return {
-        rank: parseInt(t.divisionRank) || 0,
-        name: getTeamDisplayName(t.team?.name || '?'),
-        abbr: t.team?.abbreviation || '?',
-        g: w + l, w, l, d: 0,
-        pct: (w + l) > 0 ? `.${String(Math.round(w / (w + l) * 1000)).padStart(3, '0')}` : '.000',
-        gb: t.gamesBack === '-' || t.gamesBack === 0 ? '-' : (t.gamesBack || '-'),
-        color: '#',
-        streak: t.streak?.streakCode || '',
-        wcRank: t.wildCardRank || 0,
-        wcGb: t.wildCardGamesBack === '-' || t.wildCardGamesBack === 0 ? '-' : t.wildCardGamesBack,
-      }
-    })
-    return { meta, teams }
-  })
+  const res = await fetch('/api/standings?league=mlb')
+  if (!res.ok) throw new Error('MLB fetch failed')
+  const blocks = unwrapApiData<any[]>(await res.json())
+  return (blocks || []).map((block: any, index: number) => ({
+    meta: {
+      league: block.league || 'MLB',
+      div: block.div || `Group ${index + 1}`,
+      icon: block.icon || '⚾',
+    },
+    teams: block.teams || [],
+  }))
 }
 
 async function fetchKBO(): Promise<LeagueBlock> {
   const res = await fetch('/api/kbo')
   if (!res.ok) throw new Error('KBO fetch failed')
-  return res.json()
+  return unwrapApiData<LeagueBlock>(await res.json())
 }
 
 // ============================================================

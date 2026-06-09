@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { ArrowLeft, Globe, Search, Filter, RefreshCw, AlertCircle, ExternalLink, Loader2, X, Newspaper, Clock, Building2, Shield } from 'lucide-react'
 import { getTeamDisplayName } from '@/lib/teamNames'
+import { unwrapApiData } from '@/lib/api-response'
 
 type Player = {
   player_id: string
@@ -297,8 +298,9 @@ export default function OverseasPlayers() {
     fetch('/api/players')
       .then(r => r.json())
       .then(data => {
-        setPlayers(data.players || [])
-        setLastUpdated(data.meta?.last_updated || '')
+        const body = unwrapApiData<any>(data)
+        setPlayers(body.players || [])
+        setLastUpdated(body.meta?.last_updated || '')
         setLoading(false)
       })
       .catch(() => {
@@ -315,7 +317,8 @@ export default function OverseasPlayers() {
     fetch(`/api/news?player_id=${encodeURIComponent(selectedPlayer.player_id)}`)
       .then(r => r.json())
       .then(data => {
-        setSelectedNews(data.news || [])
+        const body = unwrapApiData<any>(data)
+        setSelectedNews(body.news || [])
         setNewsLoading(false)
       })
       .catch(() => setNewsLoading(false))

@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { ArrowLeft, Globe, Loader2, AlertCircle, User, Shield, Building2, Flame, ExternalLink, Newspaper, Clock } from 'lucide-react'
+import { unwrapApiData } from '@/lib/api-response'
 
 type NewsItem = {
   id: number
@@ -81,7 +82,8 @@ export default function PlayerProfile() {
     fetch(`/api/players/${encodeURIComponent(id)}`)
       .then(r => r.ok ? r.json() : Promise.reject('Not found'))
       .then(data => {
-        setPlayer(data.player)
+        const body = unwrapApiData<any>(data)
+        setPlayer(body.player)
         setLoading(false)
       })
       .catch(() => {
@@ -93,7 +95,8 @@ export default function PlayerProfile() {
     fetch(`/api/news?player_id=${encodeURIComponent(id)}`)
       .then(r => r.json())
       .then(data => {
-        setNews(data.news || [])
+        const body = unwrapApiData<any>(data)
+        setNews(body.news || [])
         setNewsLoading(false)
       })
       .catch(() => setNewsLoading(false))
