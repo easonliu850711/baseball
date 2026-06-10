@@ -74,6 +74,8 @@ function seed() {
 
     CREATE INDEX IF NOT EXISTS idx_standings_snapshot ON standings(league, season, snapshot_date);
     CREATE INDEX IF NOT EXISTS idx_standings_team ON standings(team_name, league);
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_standings_unique_snapshot_rank
+      ON standings(league, season, snapshot_date, rank, team_name);
 
     CREATE TABLE IF NOT EXISTS games (
       id              INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -152,6 +154,25 @@ function seed() {
     );
   `)
 
+
+
+  // === Schema compatibility patches ===
+  // Older seed versions created a smaller schema. Add missing columns safely.
+  function ensureColumn(table, column, definition) {
+    const cols = db.prepare(`PRAGMA table_info(${table})`).all().map(c => c.name)
+    if (!cols.includes(column)) {
+      db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`)
+    }
+  }
+
+  ensureColumn('games', 'home_team_id', 'TEXT')
+  ensureColumn('games', 'away_team_id', 'TEXT')
+  ensureColumn('games', 'game_pk', 'TEXT')
+  ensureColumn('player_stats', 'hld', 'INTEGER DEFAULT 0')
+  ensureColumn('player_stats', 'ops', 'REAL')
+  ensureColumn('player_stats', 'bb_batter', 'INTEGER DEFAULT 0')
+  ensureColumn('player_stats', 'so_batter', 'INTEGER DEFAULT 0')
+
   log('✅ Schema initialized')
 
   // === 2. Seed Players ===
@@ -211,8 +232,8 @@ function seed() {
     { league: 'NPB_PACIFIC', rank: 2, team: '西武',   g: 45, w: 25, l: 19, d: 1, pct: '.568', gb: '0.5', color: 'text-emerald-400', stadium: '西武巨蛋' },
     { league: 'NPB_PACIFIC', rank: 3, team: '火腿',   g: 46, w: 23, l: 23, d: 0, pct: '.500', gb: '3.5', color: 'text-sky-400', stadium: 'ES CON FIELD' },
     { league: 'NPB_PACIFIC', rank: 4, team: '軟銀',   g: 42, w: 20, l: 22, d: 0, pct: '.476', gb: '4.5', color: 'text-yellow-400', stadium: 'PayPay巨蛋' },
-    { league: 'NPB_PACIFIC', rank: 5, team: '羅德',   g: 43, w: 19, l: 24, d: 0, pct: '.442', gb: '6.0', color: 'text-black', stadium: 'ZOZO海洋球場' },
-    { league: 'NPB_PACIFIC', rank: 6, team: '樂天',   g: 43, w: 18, l: 24, d: 1, pct: '.429', gb: '6.5', color: 'text-red-400', stadium: '樂天移動通信球場' },
+    { league: 'NPB_PACIFIC', rank: 5, team: '羅德',   g: 43, w: 19, l: 24, d: 0, pct: '.442', gb: '6.0', color: 'text-stone-200', stadium: 'ZOZO海洋球場' },
+    { league: 'NPB_PACIFIC', rank: 6, team: '樂天',   g: 43, w: 18, l: 24, d: 1, pct: '.429', gb: '6.5', color: 'text-red-400', stadium: '樂天生命球場' },
     // 🐉 CPBL
     { league: 'CPBL', rank: 1, team: '味全龍',  g: 36, w: 23, l: 13, d: 0, pct: '.639', gb: '-', color: 'text-red-500' },
     { league: 'CPBL', rank: 2, team: '富邦悍將', g: 33, w: 19, l: 14, d: 0, pct: '.576', gb: '2.5', color: 'text-blue-500' },
