@@ -82,7 +82,7 @@
     "league": "MiLB",
     "organization": "Pittsburgh Pirates",
     "team_name": "Pirates",
-    "current_level": "MiLB",
+    "current_level": "Rookie",
     "roster_status": "active",
     "position": "RHP",
     "bats_throws": "R/R",
@@ -157,7 +157,7 @@
     "league": "MiLB",
     "organization": "Philadelphia Phillies",
     "team_name": "Phillies",
-    "current_level": "MiLB",
+    "current_level": "High-A",
     "roster_status": "active",
     "position": "RHP",
     "bats_throws": "R/R",
@@ -292,12 +292,12 @@
     "league": "MiLB",
     "organization": "Seattle Mariners",
     "team_name": "Mariners",
-    "current_level": "MiLB",
+    "current_level": "2軍",
     "roster_status": "active",
     "position": "C",
     "bats_throws": "R/R",
-    "confidence": "low",
-    "needs_review": true
+    "confidence": "high",
+    "needs_review": false
   },
   {
     "player_id": "chang-chun-wei",

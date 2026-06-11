@@ -17,6 +17,30 @@
       "confidence": "high",
       "needs_review": false,
       "updated_at": "2026-06-11"
+    },
+    "ku-lin-jui-yang": {
+      "current_level": "2軍",
+      "needs_review": false,
+      "confidence": "high",
+      "updated_at": "2026-06-11"
+    },
+    "lin-chia-cheng": {
+      "current_level": "2軍",
+      "needs_review": false,
+      "confidence": "high",
+      "updated_at": "2026-06-11"
+    },
+    "chen-po-yu": {
+      "current_level": "Rookie",
+      "needs_review": false,
+      "confidence": "medium",
+      "updated_at": "2026-06-11"
+    },
+    "pan-wen-hui": {
+      "current_level": "High-A",
+      "needs_review": false,
+      "confidence": "medium",
+      "updated_at": "2026-06-11"
     }
   }
 }
