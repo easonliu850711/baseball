@@ -260,14 +260,14 @@
     "name_en": "An-Ko Lin",
     "country": "JP",
     "league": "NPB",
-    "organization": "Tohoku Rakuten Golden Eagles",
-    "team_name": "Golden Eagles",
-    "current_level": "1軍",
+    "organization": "Saitama Seibu Lions",
+    "team_name": "Lions",
+    "current_level": "2軍",
     "roster_status": "active",
     "position": "OF",
     "bats_throws": "L/L",
-    "confidence": "low",
-    "needs_review": true
+    "confidence": "medium",
+    "needs_review": false
   },
   {
     "player_id": "sung-chia-hao",
