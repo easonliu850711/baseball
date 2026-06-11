@@ -11,6 +11,12 @@
       "confidence": "medium",
       "needs_review": false,
       "updated_at": "2026-06-11"
+    },
+    "hsu-ju-hsi": {
+      "current_level": "2軍",
+      "confidence": "high",
+      "needs_review": false,
+      "updated_at": "2026-06-11"
     }
   }
 }
