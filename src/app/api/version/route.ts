@@ -1,18 +1,9 @@
-import { readFileSync } from 'fs'
-import { join } from 'path'
+import { proxyCentralApi } from '@/lib/central-api-proxy'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
-export async function GET() {
-  const pkgPath = join(process.cwd(), 'package.json')
-  const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'))
-
-  return Response.json({
-    name: pkg.name,
-    version: pkg.version,
-    description: pkg.description,
-    environment: process.env.NODE_ENV || 'development',
-    updatedAt: new Date().toISOString(),
-  })
+export async function GET(request: Request) {
+  return proxyCentralApi(request, '/api/baseball/version')
 }
