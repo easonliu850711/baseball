@@ -1,7 +1,50 @@
 {
   "meta": {
-    "last_updated": "2026-06-10",
+    "last_updated": "2026-06-11",
     "description": "Manual overrides for overseas players. Keep empty when not needed."
   },
-  "overrides": {}
+  "overrides": {
+    "lin-an-ko": {
+      "organization": "Saitama Seibu Lions",
+      "team_name": "Lions",
+      "current_level": "2軍",
+      "confidence": "medium",
+      "needs_review": false,
+      "updated_at": "2026-06-11"
+    },
+    "hsu-ju-hsi": {
+      "current_level": "2軍",
+      "confidence": "high",
+      "needs_review": false,
+      "updated_at": "2026-06-11"
+    },
+    "ku-lin-jui-yang": {
+      "current_level": "2軍",
+      "needs_review": false,
+      "confidence": "high",
+      "updated_at": "2026-06-11"
+    },
+    "lin-chia-cheng": {
+      "league": "NPB",
+      "organization": "Hokkaido Nippon-Ham Fighters",
+      "team_name": "Fighters",
+      "current_level": "2軍",
+      "country": "JP",
+      "confidence": "high",
+      "needs_review": false,
+      "updated_at": "2026-06-11"
+    },
+    "chen-po-yu": {
+      "current_level": "Rookie",
+      "needs_review": false,
+      "confidence": "medium",
+      "updated_at": "2026-06-11"
+    },
+    "pan-wen-hui": {
+      "current_level": "High-A",
+      "needs_review": false,
+      "confidence": "medium",
+      "updated_at": "2026-06-11"
+    }
+  }
 }
