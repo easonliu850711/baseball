@@ -25,9 +25,13 @@
       "updated_at": "2026-06-11"
     },
     "lin-chia-cheng": {
+      "league": "NPB",
+      "organization": "Hokkaido Nippon-Ham Fighters",
+      "team_name": "Fighters",
       "current_level": "2軍",
-      "needs_review": false,
+      "country": "JP",
       "confidence": "high",
+      "needs_review": false,
       "updated_at": "2026-06-11"
     },
     "chen-po-yu": {
