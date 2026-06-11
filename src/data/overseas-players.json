@@ -232,11 +232,11 @@
     "league": "NPB",
     "organization": "Hokkaido Nippon-Ham Fighters",
     "team_name": "Fighters",
-    "current_level": "1軍",
+    "current_level": "2軍",
     "roster_status": "active",
     "position": "RHP",
     "bats_throws": "R/R",
-    "confidence": "medium",
+    "confidence": "high",
     "needs_review": false
   },
   {
