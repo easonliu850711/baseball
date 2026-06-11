@@ -83,7 +83,7 @@ export default function PlayerProfile() {
       .then(r => r.ok ? r.json() : Promise.reject('Not found'))
       .then(data => {
         const body = unwrapApiData<any>(data)
-        setPlayer(body.player)
+        setPlayer(body?.data?.player || body?.player || null)
         setLoading(false)
       })
       .catch(() => {

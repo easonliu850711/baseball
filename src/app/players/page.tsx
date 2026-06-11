@@ -299,7 +299,7 @@ export default function OverseasPlayers() {
       .then(r => r.json())
       .then(data => {
         const body = unwrapApiData<any>(data)
-        setPlayers(body.players || [])
+        setPlayers(body?.data?.players || body?.players || [])
         setLastUpdated(body.meta?.last_updated || '')
         setLoading(false)
       })
