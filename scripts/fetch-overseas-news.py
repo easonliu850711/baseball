@@ -8,6 +8,7 @@ CLEAR_OLD_DAYS = 90   # 同步時砍掉超過 N 天的新聞（汰舊換新）
 
 BASE_URL = os.environ.get('BASE_URL', 'http://localhost:4567')
 SYNC_TOKEN = os.environ.get('SYNC_TOKEN', '')
+IMORI_API_KEY = os.environ.get('IMORI_API_KEY', '')
 
 if not SYNC_TOKEN:
     print("ERROR: SYNC_TOKEN is not set")
@@ -132,6 +133,7 @@ result = subprocess.run(
     ["curl", "-s", "-X", "POST", f"{BASE_URL}/api/sync/news",
      "-H", "Content-Type: application/json",
      "-H", "Authorization: Bearer " + SYNC_TOKEN,
+     "-H", "X-Imori-API-Key: " + IMORI_API_KEY,
      "-d", body],
     capture_output=True, text=True, timeout=30
 )
