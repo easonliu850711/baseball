@@ -41,19 +41,22 @@ const MLB_DIVISIONS: Record<number, { league: string; div: string; icon: string 
 async function fetchNPB(): Promise<LeagueBlock[]> {
   const res = await fetch('/api/standings?league=npb')
   if (!res.ok) throw new Error('NPB fetch failed')
-  return unwrapApiData<LeagueBlock[]>(await res.json())
+  const payload = unwrapApiData<any>(await res.json())
+  return Array.isArray(payload) ? payload : (payload && payload.data ? payload.data : [])
 }
 
 async function fetchCPBL(): Promise<LeagueBlock[]> {
   const res = await fetch('/api/standings?league=cpbl')
   if (!res.ok) throw new Error('CPBL fetch failed')
-  return unwrapApiData<LeagueBlock[]>(await res.json())
+  const payload = unwrapApiData<any>(await res.json())
+  return Array.isArray(payload) ? payload : (payload && payload.data ? payload.data : [])
 }
 
 async function fetchMLB(): Promise<MLBBlock[]> {
   const res = await fetch('/api/standings?league=mlb')
   if (!res.ok) throw new Error('MLB fetch failed')
-  const blocks = unwrapApiData<any[]>(await res.json())
+  const payload = unwrapApiData<any>(await res.json())
+  const blocks = Array.isArray(payload) ? payload : (payload && payload.data ? payload.data : [])
   return (blocks || []).map((block: any, index: number) => ({
     meta: {
       league: block.league || 'MLB',
@@ -291,20 +294,9 @@ export default function BaseballHome() {
           <div className="h-px w-12 bg-gradient-to-l from-transparent to-ocean-wave/30" />
         </div>
 
-        {/* ===== 🔗 子站傳送門 ===== */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="grid grid-cols-2 gap-4">
-          <Link href="/stadiums" className="rounded-xl border border-ocean-light/20 bg-gradient-to-br from-ocean-mid/20 to-ocean-deep/40 backdrop-blur-sm p-5 group hover:border-ocean-wave/40 transition-all duration-300">
-            <div className="flex items-center gap-3 mb-2">
-              <span className="text-2xl">📖</span>
-              <h3 className="font-bold text-shell-white text-sm">棒球觀戰紀錄</h3>
-            </div>
-            <p className="text-xs text-stone-gray/60">14 場 NPB 巡禮 · 制霸への道</p>
-            <div className="mt-3 text-ocean-wave/50 text-xs group-hover:text-ocean-wave transition-colors flex items-center gap-1">
-              前往觀戰紀錄 <ExternalLink className="w-3 h-3" />
-            </div>
-          </Link>
-
-          <Link href="/players" className="rounded-xl border border-ocean-light/20 bg-gradient-to-br from-ocean-mid/20 to-ocean-deep/40 backdrop-blur-sm p-5 group hover:border-ocean-wave/40 transition-all duration-300">
+        {/* ===== 🔗 旅外球員傳送門 ===== */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
+          <Link href="/players" className="block rounded-xl border border-ocean-light/20 bg-gradient-to-br from-ocean-mid/20 to-ocean-deep/40 backdrop-blur-sm p-5 group hover:border-ocean-wave/40 transition-all duration-300 max-w-md mx-auto">
             <div className="flex items-center gap-3 mb-2">
               <span className="text-2xl">🧢</span>
               <h3 className="font-bold text-shell-white text-sm">旅外球員</h3>
