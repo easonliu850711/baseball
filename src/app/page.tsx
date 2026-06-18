@@ -41,19 +41,22 @@ const MLB_DIVISIONS: Record<number, { league: string; div: string; icon: string 
 async function fetchNPB(): Promise<LeagueBlock[]> {
   const res = await fetch('/api/standings?league=npb')
   if (!res.ok) throw new Error('NPB fetch failed')
-  return unwrapApiData<LeagueBlock[]>(await res.json())
+  const payload = unwrapApiData<any>(await res.json())
+  return Array.isArray(payload) ? payload : (payload && payload.data ? payload.data : [])
 }
 
 async function fetchCPBL(): Promise<LeagueBlock[]> {
   const res = await fetch('/api/standings?league=cpbl')
   if (!res.ok) throw new Error('CPBL fetch failed')
-  return unwrapApiData<LeagueBlock[]>(await res.json())
+  const payload = unwrapApiData<any>(await res.json())
+  return Array.isArray(payload) ? payload : (payload && payload.data ? payload.data : [])
 }
 
 async function fetchMLB(): Promise<MLBBlock[]> {
   const res = await fetch('/api/standings?league=mlb')
   if (!res.ok) throw new Error('MLB fetch failed')
-  const blocks = unwrapApiData<any[]>(await res.json())
+  const payload = unwrapApiData<any>(await res.json())
+  const blocks = Array.isArray(payload) ? payload : (payload && payload.data ? payload.data : [])
   return (blocks || []).map((block: any, index: number) => ({
     meta: {
       league: block.league || 'MLB',
