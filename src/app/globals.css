@@ -2,10 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 🌊 深海藍白全局樣式 */
+/* 🌊 棒球資訊站全局樣式 — Sports Information Hub */
 @layer base {
   :root {
-    /* 海洋色彩變數 */
+    /* 海洋色彩 (保留供其他頁面引用) */
     --ocean-abyss: #0a1628;
     --ocean-deep: #0f2240;
     --ocean-mid: #1a3a5c;
@@ -29,84 +29,34 @@
     --seafoam-dark: #10b981;
     --sunray: #fbbf24;
     --sunray-dark: #f59e0b;
-    
-    --glow-ocean: rgba(75, 143, 192, 0.25);
-    --glow-wave: rgba(108, 180, 228, 0.2);
-    --glow-foam: rgba(168, 216, 240, 0.15);
   }
 
-  /* 字體導入 */
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap');
-
   body {
-    @apply bg-ocean-abyss text-shell-white font-space-grotesk;
-    background: linear-gradient(135deg, var(--ocean-abyss), var(--ocean-deep));
+    @apply bg-ocean-abyss text-shell-white;
     min-height: 100vh;
-    position: relative;
     overflow-x: hidden;
   }
 
-  /* 深海光影效果 */
-  body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: 
-      radial-gradient(ellipse at 20% 30%, rgba(45, 95, 138, 0.06), transparent 50%),
-      radial-gradient(ellipse at 80% 70%, rgba(75, 143, 192, 0.04), transparent 50%),
-      radial-gradient(ellipse at 50% 10%, rgba(168, 216, 240, 0.03), transparent 40%);
-    z-index: -1;
-    pointer-events: none;
-  }
+  /* 移除深海光影疊層 */
+  body::before { display: none; }
+  body::after { display: none; }
 
-  /* 水面光紋效果 */
-  body::after {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: 
-      repeating-linear-gradient(
-        90deg,
-        transparent,
-        transparent 100px,
-        rgba(168, 216, 240, 0.015) 100px,
-        rgba(168, 216, 240, 0.015) 102px
-      );
-    z-index: -1;
-    pointer-events: none;
-    animation: shimmer 6s ease-in-out infinite;
-  }
-
-  /* 深海標題樣式 */
+  /* 取消標題全局漸層 — 各頁面自行決定 */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-space-grotesk font-semibold tracking-tight;
-    background: linear-gradient(135deg, var(--pure-white), var(--ocean-foam), var(--ocean-wave));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    @apply font-sans font-semibold tracking-tight text-shell-white;
+    background: none;
+    -webkit-text-fill-color: initial;
+    background-clip: initial;
   }
 
-  /* 代碼和技術文本 */
-  code, pre {
-    @apply font-jetbrains-mono;
-  }
-
-  /* 鏈接樣式 */
   a {
-    @apply text-ocean-wave transition-colors duration-200;
+    @apply text-ocean-wave transition-colors duration-150;
   }
 
   a:hover {
     @apply text-ocean-foam;
   }
 
-  /* 選取顏色 */
   ::selection {
     background: rgba(75, 143, 192, 0.3);
     color: var(--pure-white);
@@ -114,9 +64,9 @@
 }
 
 @layer components {
-  /* 深海按鈕 */
+  /* 保留供其他頁面引用（/players, /standings, /stadiums） */
   .ocean-button {
-    @apply px-6 py-3 rounded-lg font-space-grotesk font-medium transition-all duration-300 text-white;
+    @apply px-6 py-3 rounded-lg font-medium transition-all duration-300 text-white;
     background: linear-gradient(135deg, #1a3a5c, #2d5f8a);
     box-shadow: 0 0 20px rgba(45, 95, 138, 0.3);
   }
@@ -127,24 +77,19 @@
     box-shadow: 0 0 30px rgba(75, 143, 192, 0.3);
   }
 
-  /* 深海卡片 */
   .ocean-card {
-    @apply rounded-xl p-6 backdrop-blur-sm border border-ocean-light/20;
+    @apply rounded-xl p-6 border border-ocean-light/20;
     background: linear-gradient(135deg, rgba(15, 34, 64, 0.9), rgba(26, 58, 92, 0.6));
-    box-shadow: 0 8px 32px rgba(10, 22, 40, 0.3);
   }
 
   .ocean-card:hover {
     border-color: rgba(75, 143, 192, 0.3);
-    box-shadow: 0 0 30px rgba(75, 143, 192, 0.15);
   }
 
-  /* 發光文字 */
   .glow-text {
     text-shadow: 0 0 10px rgba(108, 180, 228, 0.3);
   }
 
-  /* 分隔線 */
   .ocean-divider {
     @apply w-full h-px my-8;
     background: linear-gradient(90deg, transparent, var(--ocean-light), transparent);
@@ -152,50 +97,7 @@
 }
 
 @layer utilities {
-  /* 動畫關鍵幀 */
-  @keyframes shimmer {
-    0%, 100% { opacity: 0.4; }
-    50% { opacity: 0.7; }
-  }
-
-  @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-12px); }
-  }
-
-  @keyframes wave {
-    0%, 100% { transform: translateY(0px) scaleY(1); }
-    50% { transform: translateY(-6px) scaleY(1.02); }
-  }
-
-  @keyframes pulse-glow {
-    0%, 100% { box-shadow: 0 0 20px rgba(75, 143, 192, 0.25); }
-    50% { box-shadow: 0 0 40px rgba(108, 180, 228, 0.2); }
-  }
-
-  /* 動畫類 */
-  .animate-float {
-    animation: float 6s ease-in-out infinite;
-  }
-
-  .animate-wave {
-    animation: wave 8s ease-in-out infinite;
-  }
-
-  .animate-pulse-glow {
-    animation: pulse-glow 2s ease-in-out infinite;
-  }
-
-  /* 文本漸層 */
-  .text-gradient {
-    background: linear-gradient(135deg, var(--pure-white), var(--ocean-foam), var(--ocean-wave));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  /* 背景漸層 */
-  .bg-ocean-gradient {
-    background: linear-gradient(135deg, var(--ocean-abyss), var(--ocean-deep));
-  }
+  /* 隱藏滾動條 (mobile league tabs) */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }
