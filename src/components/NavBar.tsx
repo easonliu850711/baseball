@@ -4,11 +4,10 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const navLinks = [
-  { href: '/', label: 'Home' },
-  { href: '/standings', label: 'Standings' },
-  { href: '/games', label: 'Games' },
-  { href: '/players', label: 'Players' },
-  { href: '/stadiums', label: 'Stadiums' },
+  { href: '/', label: 'Home', kind: 'route' },
+  { href: '/#standings', label: 'Standings', kind: 'anchor' },
+  { href: '/games', label: 'Games', kind: 'route' },
+  { href: '/players', label: 'Players', kind: 'route' },
 ]
 
 export default function NavBar() {
@@ -16,29 +15,35 @@ export default function NavBar() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-ocean-abyss border-b border-white/10">
-        <div className="max-w-6xl mx-auto px-4">
-          {/* First row: site name */}
-          <div className="flex items-center h-9">
-            <Link href="/" className="text-[13px] text-shell-white font-medium tracking-wide">
-              伊森の国際野球航路
-            </Link>
-          </div>
-          {/* Second row: league tabs style nav */}
-          <div className="flex items-center h-8 gap-0">
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
+          <Link href="/" className="group flex min-w-0 items-center gap-2">
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-950 text-sm text-white shadow-sm">
+              ⚾
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate text-[14px] font-semibold tracking-tight text-slate-950">
+                伊森の国際野球航路
+              </span>
+              <span className="hidden text-[10px] uppercase tracking-[0.22em] text-slate-400 sm:block">
+                Studio Imori Baseball
+              </span>
+            </span>
+          </Link>
+
+          <div className="flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 p-1">
             {navLinks.map(link => {
-              const isActive = pathname === link.href
+              const isActive = link.kind === 'route' && pathname === link.href
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`
-                    px-3 py-1 text-[12px] transition-colors
-                    ${isActive
-                      ? 'text-shell-white border-b-[2px] border-ocean-wave -mb-[1px]'
-                      : 'text-stone-gray/50 hover:text-stone-gray/70'
-                    }
-                  `}
+                  className={[
+                    'rounded-full px-3 py-1.5 text-[12px] font-medium transition-colors',
+                    isActive
+                      ? 'bg-slate-950 text-white shadow-sm'
+                      : 'text-slate-500 hover:bg-white hover:text-slate-900'
+                  ].join(' ')}
                 >
                   {link.label}
                 </Link>
@@ -47,7 +52,7 @@ export default function NavBar() {
           </div>
         </div>
       </nav>
-      <div className="h-[68px]" />
+      <div className="h-14" />
     </>
   )
 }

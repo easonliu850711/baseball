@@ -17,12 +17,12 @@ export default function NewsFeedList() {
 
   useEffect(() => {
     let alive = true
-    fetch('/api/news?limit=3', { cache: 'no-store' })
+    fetch('/api/news?limit=4', { cache: 'no-store' })
       .then(r => r.ok ? r.json() : null)
       .then(payload => {
         if (!alive) return
         const news = extractNews(payload)
-        setItems(news.slice(0, 3).map((n: any) => ({
+        setItems(news.slice(0, 4).map((n: any) => ({
           id: n.id,
           title: String(n.title || n.headline || 'Untitled'),
           source: n.source,
@@ -35,36 +35,35 @@ export default function NewsFeedList() {
     return () => { alive = false }
   }, [])
 
-  if (loading) {
-    return (
-      <section>
-        <div className="text-[11px] uppercase tracking-wider text-stone-gray/45 mb-3">News</div>
-        <div className="space-y-2">{[1, 2, 3].map(i => <div key={i} className="h-6 bg-ocean-mid/20 rounded animate-pulse" />)}</div>
-      </section>
-    )
-  }
-
   return (
-    <section>
-      <div className="text-[11px] uppercase tracking-wider text-stone-gray/45 mb-3">News</div>
-      {items.length === 0 ? (
-        <div className="border-y border-white/[0.06] py-6 text-center text-[12px] text-stone-gray/50">新聞資料同步中</div>
+    <section className="imori-card p-5">
+      <div className="mb-4">
+        <div className="imori-section-title">News</div>
+        <h2 className="mt-1 text-lg">情報更新</h2>
+      </div>
+
+      {loading ? (
+        <div className="space-y-2">
+          {[1, 2, 3, 4].map(i => <div key={i} className="h-12 rounded-xl bg-slate-100 animate-pulse" />)}
+        </div>
+      ) : items.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 py-8 text-center">
+          <div className="text-sm font-medium text-slate-600">新聞資料同步中</div>
+          <div className="mt-1 text-[12px] text-slate-400">目前不使用假新聞填版</div>
+        </div>
       ) : (
-        <div className="space-y-1">
+        <div className="divide-y divide-slate-100">
           {items.map((item, i) => (
-            <div key={item.id || i} className="flex items-start gap-2 py-1.5 border-b border-white/[0.04] last:border-0">
-              <span className="text-ocean-wave/70 text-[10px] mt-1 shrink-0">▸</span>
-              <div className="min-w-0">
-                <div className="text-[13px] text-shell-white leading-snug truncate max-w-full">
-                  {item.url ? (
-                    <a href={item.url} target="_blank" rel="noopener noreferrer" className="hover:text-ocean-wave transition-colors">
-                      {item.title}
-                    </a>
-                  ) : item.title}
-                </div>
-                <div className="text-[10px] text-stone-gray/45 mt-0.5">
-                  {[item.source, item.published_at ? formatRelativeTime(item.published_at) : null].filter(Boolean).join(' · ')}
-                </div>
+            <div key={item.id || i} className="py-3">
+              <div className="line-clamp-2 text-sm font-semibold leading-5 text-slate-950">
+                {item.url ? (
+                  <a href={item.url} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600">
+                    {item.title}
+                  </a>
+                ) : item.title}
+              </div>
+              <div className="mt-1 text-[11px] text-slate-400">
+                {[item.source, item.published_at ? formatRelativeTime(item.published_at) : null].filter(Boolean).join(' · ')}
               </div>
             </div>
           ))}

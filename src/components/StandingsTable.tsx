@@ -34,7 +34,7 @@ export interface StandingsFetchResult {
 
 function normalizeTeam(row: any, fallbackRank: number): Team {
   return {
-    rank: Number(row.rank ?? fallbackRank),
+    rank: Number(row.rank ?? fallbackRank + 1),
     name: String(row.name ?? row.team_name ?? row.team ?? ''),
     g: Number(row.g ?? row.games ?? 0),
     w: Number(row.w ?? row.wins ?? 0),
@@ -78,57 +78,58 @@ interface StandingsTableProps {
 export default function StandingsTable({ teams, compact = true }: StandingsTableProps) {
   if (!teams || teams.length === 0) {
     return (
-      <div className="border-y border-white/[0.06] py-8 text-center text-sm text-stone-gray/50">
+      <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 py-10 text-center text-sm text-slate-500">
         暫無戰績資料
       </div>
     )
   }
 
-  const rows = teams.slice(0, compact ? 6 : undefined)
+  const rows = teams.slice(0, compact ? 8 : undefined)
   const showD = !compact || rows.some(t => Number(t.d || 0) > 0)
 
   return (
-    <div className="overflow-x-auto border-y border-white/[0.08]">
-      <table className="w-full min-w-[520px] text-[13px] border-collapse">
-        <thead>
-          <tr className="border-b border-white/10 text-stone-gray/50 text-[10px] uppercase tracking-wider">
-            <th className="text-left py-2 pr-2 w-8 font-normal">#</th>
-            <th className="text-left py-2 pr-3 font-normal">Team</th>
-            <th className="text-center py-2 pr-2 w-10 font-normal">W</th>
-            <th className="text-center py-2 pr-2 w-10 font-normal">L</th>
-            {showD && <th className="text-center py-2 pr-2 w-10 font-normal">D</th>}
-            <th className="text-center py-2 pr-2 w-16 font-normal">PCT</th>
-            <th className="text-center py-2 pr-2 w-12 font-normal">GB</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((team, idx) => {
-            const rank = team.rank || idx + 1
-            const isPlayoff = rank <= 3
-            const isFirst = rank === 1
-            return (
-              <tr
-                key={`${team.name}-${rank}`}
-                className={`border-b border-white/[0.04] last:border-b-0 ${isPlayoff ? 'bg-ocean-wave/[0.03]' : ''}`}
-              >
-                <td className="py-2.5 pr-2">
-                  <div className={`w-6 h-6 flex items-center justify-center text-[11px] font-medium ${isFirst ? 'border-l-[3px] border-ocean-wave' : ''}`}>
-                    {rank}
-                  </div>
-                </td>
-                <td className="py-2.5 pr-3 text-shell-white font-medium truncate max-w-[220px]">
-                  {getTeamDisplayName(team.name)}
-                </td>
-                <td className="text-center py-2.5 pr-2 text-seafoam font-medium">{team.w}</td>
-                <td className="text-center py-2.5 pr-2 text-coral-light font-medium">{team.l}</td>
-                {showD && <td className="text-center py-2.5 pr-2 text-stone-gray/50">{team.d ?? 0}</td>}
-                <td className="text-center py-2.5 pr-2 font-mono text-stone-gray">{team.pct}</td>
-                <td className="text-center py-2.5 pr-2 text-stone-gray/40">{team.gb || '-'}</td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
+    <div className="overflow-hidden rounded-2xl border border-slate-200">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[560px] border-collapse text-[13px]">
+          <thead>
+            <tr className="bg-slate-50 text-[10px] uppercase tracking-[0.18em] text-slate-400">
+              <th className="w-12 px-3 py-3 text-left font-semibold">#</th>
+              <th className="px-3 py-3 text-left font-semibold">Team</th>
+              <th className="w-14 px-3 py-3 text-center font-semibold">W</th>
+              <th className="w-14 px-3 py-3 text-center font-semibold">L</th>
+              {showD && <th className="w-14 px-3 py-3 text-center font-semibold">D</th>}
+              <th className="w-20 px-3 py-3 text-center font-semibold">PCT</th>
+              <th className="w-16 px-3 py-3 text-center font-semibold">GB</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 bg-white">
+            {rows.map((team, idx) => {
+              const rank = team.rank || idx + 1
+              const isFirst = rank === 1
+              return (
+                <tr key={`${team.name}-${rank}`} className="hover:bg-slate-50/70">
+                  <td className="px-3 py-3">
+                    <span className={[
+                      'inline-flex h-7 w-7 items-center justify-center rounded-full text-[12px] font-semibold',
+                      isFirst ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500'
+                    ].join(' ')}>
+                      {rank}
+                    </span>
+                  </td>
+                  <td className="max-w-[260px] truncate px-3 py-3 font-semibold text-slate-900">
+                    {getTeamDisplayName(team.name)}
+                  </td>
+                  <td className="px-3 py-3 text-center font-semibold text-emerald-600">{team.w}</td>
+                  <td className="px-3 py-3 text-center font-semibold text-rose-500">{team.l}</td>
+                  {showD && <td className="px-3 py-3 text-center text-slate-500">{team.d ?? 0}</td>}
+                  <td className="px-3 py-3 text-center font-mono text-slate-600">{team.pct}</td>
+                  <td className="px-3 py-3 text-center text-slate-400">{team.gb || '-'}</td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }

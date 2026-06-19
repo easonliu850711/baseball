@@ -32,42 +32,51 @@ export default function PlayerSpotlightList() {
           const ib = PRIORITY.indexOf(b.player_id)
           return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib)
         })
-        setPlayers(ordered.slice(0, 5))
+        setPlayers(ordered.slice(0, 6))
       })
       .catch(() => setPlayers([]))
       .finally(() => alive && setLoading(false))
     return () => { alive = false }
   }, [])
 
-  if (loading) {
-    return (
-      <section>
-        <div className="text-[11px] uppercase tracking-wider text-stone-gray/45 mb-3">Spotlight</div>
-        <div className="space-y-2">{[1, 2, 3].map(i => <div key={i} className="h-7 bg-ocean-mid/20 rounded animate-pulse" />)}</div>
-      </section>
-    )
-  }
-
   return (
-    <section>
-      <div className="text-[11px] uppercase tracking-wider text-stone-gray/45 mb-3">Spotlight</div>
-      {players.length === 0 ? (
-        <div className="border-y border-white/[0.06] py-6 text-center text-[12px] text-stone-gray/50">球員資料同步中</div>
+    <section className="imori-card p-5">
+      <div className="mb-4 flex items-end justify-between">
+        <div>
+          <div className="imori-section-title">Spotlight</div>
+          <h2 className="mt-1 text-lg">旅外球員追蹤</h2>
+        </div>
+        <Link href="/players" className="text-[12px] font-semibold text-slate-500 hover:text-slate-950">
+          全部球員 →
+        </Link>
+      </div>
+
+      {loading ? (
+        <div className="space-y-2">
+          {[1, 2, 3, 4].map(i => <div key={i} className="h-12 rounded-xl bg-slate-100 animate-pulse" />)}
+        </div>
+      ) : players.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 py-8 text-center text-sm text-slate-500">
+          球員資料同步中
+        </div>
       ) : (
-        <div className="space-y-0.5">
+        <div className="divide-y divide-slate-100">
           {players.map(p => (
             <Link
               key={p.player_id}
               href={`/players/${p.player_id}`}
-              className="flex items-center gap-2 py-1.5 border-b border-white/[0.04] hover:bg-white/[0.03] transition-colors group"
+              className="grid grid-cols-[1fr_auto] gap-3 py-3 hover:bg-slate-50"
             >
-              <span className="text-[13px] text-shell-white group-hover:text-ocean-wave transition-colors shrink-0">
-                {p.name_zh || p.name_en || p.player_id}
-              </span>
-              <span className="text-[11px] text-stone-gray/55 truncate">
-                {[p.league, p.organization, p.current_level, p.roster_status && p.roster_status !== 'Unknown' ? p.roster_status : null]
-                  .filter(Boolean)
-                  .join(' · ')}
+              <div className="min-w-0">
+                <div className="truncate text-sm font-semibold text-slate-950">
+                  {p.name_zh || p.name_en || p.player_id}
+                </div>
+                <div className="mt-1 truncate text-[12px] text-slate-500">
+                  {[p.name_en, p.organization, p.current_level].filter(Boolean).join(' · ')}
+                </div>
+              </div>
+              <span className="self-center rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600">
+                {p.league || 'INT'}
               </span>
             </Link>
           ))}

@@ -53,50 +53,51 @@ export default function HomeHighlights() {
     return () => { alive = false }
   }, [])
 
-  if (loading) {
-    return (
-      <section className="mb-5 border-y border-white/[0.06] py-3">
-        <div className="h-4 w-20 bg-ocean-mid/20 rounded animate-pulse mb-3" />
-        <div className="h-5 w-full bg-ocean-mid/20 rounded animate-pulse" />
-      </section>
-    )
-  }
+  return (
+    <aside className="imori-card-soft p-5">
+      <div className="mb-3 flex items-center justify-between">
+        <div>
+          <div className="imori-section-title">Today</div>
+          <h2 className="mt-1 text-lg">今日焦點</h2>
+        </div>
+        <span className="rounded-full bg-slate-950 px-2.5 py-1 text-[10px] font-semibold text-white">
+          Live DB
+        </span>
+      </div>
 
-  if (items.length > 0) {
-    return (
-      <section className="mb-5 border-y border-white/[0.06] py-3">
-        <div className="text-[11px] uppercase tracking-wider text-stone-gray/45 mb-2">今日焦點</div>
-        <div className="space-y-1.5">
+      {loading ? (
+        <div className="space-y-2">
+          <div className="h-4 rounded bg-slate-100 animate-pulse" />
+          <div className="h-4 w-4/5 rounded bg-slate-100 animate-pulse" />
+          <div className="h-4 w-2/3 rounded bg-slate-100 animate-pulse" />
+        </div>
+      ) : items.length > 0 ? (
+        <div className="space-y-3">
           {items.map((item, i) => (
-            <div key={i} className="flex items-center gap-3 min-w-0 border-l-2 border-ocean-wave/40 pl-3">
-              <span className="text-[13px] text-shell-white leading-snug truncate">{item.title}</span>
-              <span className="ml-auto shrink-0 text-[10px] text-stone-gray/45">
+            <div key={i} className="rounded-xl border border-slate-100 bg-white px-3 py-2">
+              <div className="line-clamp-2 text-sm font-medium leading-5 text-slate-900">{item.title}</div>
+              <div className="mt-1 text-[11px] text-slate-400">
                 {[item.source, item.published_at ? formatRelativeTime(item.published_at) : null].filter(Boolean).join(' · ')}
-              </span>
+              </div>
             </div>
           ))}
         </div>
-      </section>
-    )
-  }
-
-  if (facts?.players || facts?.snapshot) {
-    return (
-      <section className="mb-5 border-y border-white/[0.06] py-3">
-        <div className="text-[11px] uppercase tracking-wider text-stone-gray/45 mb-2">今日焦點</div>
-        <div className="flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-stone-gray/65">
-          {facts.players && <span>旅外球員 {facts.players} 人</span>}
-          <span>CPBL · NPB · MLB · KBO</span>
-          {facts.snapshot && <span>Snapshot {facts.snapshot}</span>}
+      ) : (
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-xl bg-white px-3 py-3 text-center shadow-sm">
+            <div className="text-2xl font-semibold text-slate-950">{facts?.players || 28}</div>
+            <div className="mt-1 text-[11px] text-slate-400">旅外球員</div>
+          </div>
+          <div className="rounded-xl bg-white px-3 py-3 text-center shadow-sm">
+            <div className="text-2xl font-semibold text-slate-950">4</div>
+            <div className="mt-1 text-[11px] text-slate-400">追蹤聯盟</div>
+          </div>
+          <div className="col-span-2 rounded-xl bg-white px-3 py-3 text-[12px] text-slate-500 shadow-sm">
+            {facts?.snapshot ? `Latest snapshot: ${facts.snapshot}` : '資料同步中'}
+          </div>
         </div>
-      </section>
-    )
-  }
-
-  return (
-    <section className="mb-5 border-y border-white/[0.06] py-3 text-[12px] text-stone-gray/50">
-      資料同步中
-    </section>
+      )}
+    </aside>
   )
 }
 
