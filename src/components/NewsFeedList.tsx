@@ -36,33 +36,31 @@ export default function NewsFeedList() {
   }, [])
 
   return (
-    <section className="imori-card p-5">
+    <section className="rounded-2xl border border-ocean-light/10 bg-ocean-deep/50 p-5">
       <div className="mb-4">
-        <div className="imori-section-title">News</div>
-        <h2 className="mt-1 text-lg">情報更新</h2>
+        <h2 className="text-sm font-bold tracking-wide text-shell-white">情報更新</h2>
       </div>
 
       {loading ? (
         <div className="space-y-2">
-          {[1, 2, 3, 4].map(i => <div key={i} className="h-12 rounded-xl bg-slate-100 animate-pulse" />)}
+          {[1, 2, 3, 4].map(i => <div key={i} className="h-12 rounded-xl bg-ocean-mid/30 animate-pulse" />)}
         </div>
       ) : items.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 py-8 text-center">
-          <div className="text-sm font-medium text-slate-600">新聞資料同步中</div>
-          <div className="mt-1 text-[12px] text-slate-400">目前不使用假新聞填版</div>
+        <div className="rounded-2xl border border-dashed border-ocean-light/10 bg-ocean-mid/20 py-8 text-center">
+          <div className="text-sm font-medium text-stone-gray/50">新聞資料同步中</div>
         </div>
       ) : (
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-ocean-light/10">
           {items.map((item, i) => (
             <div key={item.id || i} className="py-3">
-              <div className="line-clamp-2 text-sm font-semibold leading-5 text-slate-950">
+              <div className="line-clamp-2 text-sm font-semibold leading-5 text-shell-white">
                 {item.url ? (
-                  <a href={item.url} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600">
+                  <a href={item.url} target="_blank" rel="noopener noreferrer" className="hover:text-ocean-wave">
                     {item.title}
                   </a>
                 ) : item.title}
               </div>
-              <div className="mt-1 text-[11px] text-slate-400">
+              <div className="mt-1 text-[11px] text-stone-gray/50">
                 {[item.source, item.published_at ? formatRelativeTime(item.published_at) : null].filter(Boolean).join(' · ')}
               </div>
             </div>
@@ -77,8 +75,8 @@ function formatRelativeTime(dateStr: string): string {
   const d = new Date(dateStr)
   if (Number.isNaN(d.getTime())) return ''
   const diffH = Math.floor((Date.now() - d.getTime()) / 3600000)
-  if (diffH < 1) return 'just now'
-  if (diffH < 24) return `${diffH}h ago`
+  if (diffH < 1) return '剛剛'
+  if (diffH < 24) return `${diffH}小時前`
   const diffD = Math.floor(diffH / 24)
-  return diffD === 1 ? 'yesterday' : `${diffD}d ago`
+  return `${diffD}天前`
 }

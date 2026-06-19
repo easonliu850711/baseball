@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import PlayerModal, { type Player, type NewsItem } from '@/components/PlayerModal'
-import { extractPlayers } from '@/lib/api-response'
+import { extractPlayers, extractNews } from '@/lib/api-response'
 
 const PRIORITY = ['lee-hao-yu', 'deng-kai-wei', 'cheng-tsung-che', 'lin-yu-min', 'wang-yen-cheng']
 
@@ -39,8 +39,8 @@ export default function PlayerSpotlightList() {
     fetch(`/api/news?player_id=${encodeURIComponent(selectedPlayer.player_id)}`)
       .then(r => r.json())
       .then(payload => {
-        const data = payload?.data || payload
-        setSelectedNews(data?.news || data?.items || data || [])
+        const news = extractNews(payload)
+        setSelectedNews(news)
         setNewsLoading(false)
       })
       .catch(() => setNewsLoading(false))
