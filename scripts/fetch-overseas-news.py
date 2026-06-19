@@ -127,10 +127,10 @@ if not all_news:
 # POST — 含汰舊換新參數
 payload = {"news": all_news, "clear_old_days": CLEAR_OLD_DAYS}
 body = json.dumps(payload, ensure_ascii=False)
-print(f"=== POSTing {len(all_news)} articles to {BASE_URL}/api/sync/news (clear_old_days={CLEAR_OLD_DAYS}) ===")
+print(f"=== POSTing {len(all_news)} articles to {BASE_URL}/api/baseball/sync/news (clear_old_days={CLEAR_OLD_DAYS}) ===")
 
 result = subprocess.run(
-    ["curl", "-s", "-X", "POST", f"{BASE_URL}/api/sync/news",
+    ["curl", "-s", "-X", "POST", f"{BASE_URL}/api/baseball/sync/news",
      "-H", "Content-Type: application/json",
      "-H", "Authorization: Bearer " + SYNC_TOKEN,
      "-H", "X-Imori-API-Key: " + IMORI_API_KEY,

@@ -2,9 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Studio Imori Baseball v1.2 — clean intelligence dashboard */
+/* 🌊 棒球資訊站全局樣式 — Sports Information Hub */
 @layer base {
   :root {
+    /* 海洋色彩 (保留供其他頁面引用) */
     --ocean-abyss: #0a1628;
     --ocean-deep: #0f2240;
     --ocean-mid: #1a3a5c;
@@ -12,39 +13,60 @@
     --ocean-surface: #4a8fc0;
     --ocean-wave: #6cb4e4;
     --ocean-foam: #a8d8f0;
-    --shell-white: #f8fafc;
-    --stone-gray: #64748b;
-    --coral: #ef4444;
-    --coral-light: #f87171;
-    --seafoam: #059669;
-    --sunray: #f59e0b;
-  }
+    --ocean-spray: #d4edf7;
 
-  html {
-    scroll-behavior: smooth;
+    --pure-white: #ffffff;
+    --shell-white: #f0f4f8;
+    --cloud-gray: #dce3ed;
+    --stone-gray: #94a3b8;
+    --slate-gray: #64748b;
+    --charcoal: #334155;
+    --deep-charcoal: #1e293b;
+
+    --coral: #ff6b6b;
+    --coral-light: #ff8e8e;
+    --seafoam: #34d399;
+    --seafoam-dark: #10b981;
+    --sunray: #fbbf24;
+    --sunray-dark: #f59e0b;
   }
 
   body {
-    @apply min-h-screen bg-slate-50 text-slate-900 antialiased;
+    @apply bg-ocean-abyss text-shell-white;
+    min-height: 100vh;
     overflow-x: hidden;
   }
 
+  /* Remove overlays */
+  body::before { display: none; }
+  body::after { display: none; }
+
+  /* No global text-gradient on headings */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-sans font-semibold tracking-tight text-slate-950;
+    @apply font-sans font-semibold tracking-tight text-shell-white;
+    background: none;
+    -webkit-text-fill-color: initial;
+    background-clip: initial;
   }
 
   a {
-    @apply transition-colors;
+    @apply text-ocean-wave transition-colors duration-150;
+  }
+
+  a:hover {
+    @apply text-ocean-foam;
   }
 
   ::selection {
-    background: rgba(15, 23, 42, 0.14);
+    background: rgba(75, 143, 192, 0.3);
+    color: var(--pure-white);
   }
 }
 
 @layer components {
+  /* imori classes from staging — preserved for /standings page */
   .imori-page {
-    @apply min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.12),transparent_36%),linear-gradient(180deg,#f8fafc_0%,#eef3f8_48%,#f8fafc_100%)];
+    @apply min-h-screen bg-ocean-abyss;
   }
 
   .imori-shell {
@@ -52,35 +74,50 @@
   }
 
   .imori-card {
-    @apply rounded-2xl border border-slate-200 bg-white/90 shadow-sm shadow-slate-200/70;
+    @apply rounded-2xl border border-ocean-light/10 bg-ocean-deep/50;
   }
 
   .imori-card-soft {
-    @apply rounded-2xl border border-slate-200/80 bg-white/70 shadow-sm shadow-slate-200/60 backdrop-blur;
+    @apply rounded-2xl border border-ocean-light/5 bg-ocean-deep/30;
   }
 
   .imori-section-title {
-    @apply text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400;
+    @apply text-[11px] font-semibold uppercase tracking-[0.24em] text-stone-gray/40;
   }
 
   .imori-muted {
-    @apply text-slate-500;
+    @apply text-stone-gray/50;
   }
 
+  /* Ocean-themed components */
   .ocean-button {
-    @apply rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800;
+    @apply px-6 py-3 rounded-lg font-medium transition-all duration-300 text-white;
+    background: linear-gradient(135deg, #1a3a5c, #2d5f8a);
+    box-shadow: 0 0 20px rgba(45, 95, 138, 0.3);
+  }
+
+  .ocean-button:hover {
+    @apply transform -translate-y-0.5;
+    background: linear-gradient(135deg, #2d5f8a, #4a8fc0);
+    box-shadow: 0 0 30px rgba(75, 143, 192, 0.3);
   }
 
   .ocean-card {
-    @apply rounded-2xl border border-slate-200 bg-white p-5 shadow-sm;
+    @apply rounded-xl p-6 border border-ocean-light/20;
+    background: linear-gradient(135deg, rgba(15, 34, 64, 0.9), rgba(26, 58, 92, 0.6));
+  }
+
+  .ocean-card:hover {
+    border-color: rgba(75, 143, 192, 0.3);
   }
 
   .glow-text {
-    text-shadow: none;
+    text-shadow: 0 0 10px rgba(108, 180, 228, 0.3);
   }
 
   .ocean-divider {
-    @apply my-8 h-px w-full bg-slate-200;
+    @apply w-full h-px my-8;
+    background: linear-gradient(90deg, transparent, var(--ocean-light), transparent);
   }
 }
 

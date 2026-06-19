@@ -1,24 +1,17 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
+import PlayerModal, { type Player, type NewsItem } from '@/components/PlayerModal'
 import { extractPlayers } from '@/lib/api-response'
-
-interface Player {
-  player_id: string
-  name_zh: string
-  name_en?: string
-  league?: string
-  organization?: string
-  current_level?: string
-  roster_status?: string
-}
 
 const PRIORITY = ['lee-hao-yu', 'deng-kai-wei', 'cheng-tsung-che', 'lin-yu-min', 'wang-yen-cheng']
 
 export default function PlayerSpotlightList() {
   const [players, setPlayers] = useState<Player[]>([])
   const [loading, setLoading] = useState(true)
+  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null)
+  const [selectedNews, setSelectedNews] = useState<NewsItem[]>([])
+  const [newsLoading, setNewsLoading] = useState(false)
 
   useEffect(() => {
     let alive = true
@@ -39,49 +32,69 @@ export default function PlayerSpotlightList() {
     return () => { alive = false }
   }, [])
 
-  return (
-    <section className="imori-card p-5">
-      <div className="mb-4 flex items-end justify-between">
-        <div>
-          <div className="imori-section-title">Spotlight</div>
-          <h2 className="mt-1 text-lg">旅外球員追蹤</h2>
-        </div>
-        <Link href="/players" className="text-[12px] font-semibold text-slate-500 hover:text-slate-950">
-          全部球員 →
-        </Link>
-      </div>
+  useEffect(() => {
+    if (!selectedPlayer) return
+    setSelectedNews([])
+    setNewsLoading(true)
+    fetch(`/api/news?player_id=${encodeURIComponent(selectedPlayer.player_id)}`)
+      .then(r => r.json())
+      .then(payload => {
+        const data = payload?.data || payload
+        setSelectedNews(data?.news || data?.items || data || [])
+        setNewsLoading(false)
+      })
+      .catch(() => setNewsLoading(false))
+  }, [selectedPlayer])
 
-      {loading ? (
-        <div className="space-y-2">
-          {[1, 2, 3, 4].map(i => <div key={i} className="h-12 rounded-xl bg-slate-100 animate-pulse" />)}
+  return (
+    <>
+      <section className="rounded-2xl border border-ocean-light/10 bg-ocean-deep/50 p-5">
+        <div className="mb-4">
+          <h2 className="text-sm font-bold tracking-wide text-shell-white">旅外球員追蹤</h2>
         </div>
-      ) : players.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 py-8 text-center text-sm text-slate-500">
-          球員資料同步中
-        </div>
-      ) : (
-        <div className="divide-y divide-slate-100">
-          {players.map(p => (
-            <Link
-              key={p.player_id}
-              href={`/players/${p.player_id}`}
-              className="grid grid-cols-[1fr_auto] gap-3 py-3 hover:bg-slate-50"
-            >
-              <div className="min-w-0">
-                <div className="truncate text-sm font-semibold text-slate-950">
-                  {p.name_zh || p.name_en || p.player_id}
+
+        {loading ? (
+          <div className="space-y-2">
+            {[1, 2, 3, 4].map(i => <div key={i} className="h-12 rounded-xl bg-ocean-mid/30 animate-pulse" />)}
+          </div>
+        ) : players.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-ocean-light/10 bg-ocean-mid/20 py-8 text-center text-sm text-stone-gray/50">
+            球員資料同步中
+          </div>
+        ) : (
+          <div className="divide-y divide-ocean-light/10">
+            {players.map(p => (
+              <button
+                key={p.player_id}
+                type="button"
+                onClick={() => setSelectedPlayer(p)}
+                className="grid w-full grid-cols-[1fr_auto] gap-3 py-3 text-left hover:bg-ocean-mid/20 transition-colors rounded-lg px-2 -mx-2"
+              >
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-semibold text-shell-white">
+                    {p.name_zh || p.name_en || p.player_id}
+                  </div>
+                  <div className="mt-1 truncate text-[12px] text-stone-gray/50">
+                    {[p.name_en, p.organization, p.current_level].filter(Boolean).join(' · ')}
+                  </div>
                 </div>
-                <div className="mt-1 truncate text-[12px] text-slate-500">
-                  {[p.name_en, p.organization, p.current_level].filter(Boolean).join(' · ')}
-                </div>
-              </div>
-              <span className="self-center rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600">
-                {p.league || 'INT'}
-              </span>
-            </Link>
-          ))}
-        </div>
+                <span className="self-center rounded-full bg-ocean-light/15 px-2.5 py-1 text-[11px] font-semibold text-ocean-foam">
+                  {p.league || 'INT'}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {selectedPlayer && (
+        <PlayerModal
+          player={selectedPlayer}
+          news={selectedNews}
+          newsLoading={newsLoading}
+          onClose={() => setSelectedPlayer(null)}
+        />
       )}
-    </section>
+    </>
   )
 }
