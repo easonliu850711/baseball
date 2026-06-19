@@ -1,9 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { ArrowLeft, Calendar, MapPin, Clock, Trophy, RefreshCw } from 'lucide-react'
 import { getTeamDisplayName } from '@/lib/teamNames'
 import { unwrapApiData } from '@/lib/api-response'
 
@@ -62,7 +60,7 @@ function statusClass(status: string) {
 export default function GamesPage() {
   const [games, setGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeLeague, setActiveLeague] = useState<League | 'ALL'>('ALL')
+  const [activeLeague, setActiveLeague] = useState<League>('NPB')
   const [selectedDate, setSelectedDate] = useState(todayInTaipei)
 
   async function fetchGames(date: string, league: string) {
@@ -89,7 +87,7 @@ export default function GamesPage() {
     fetchGames(selectedDate, activeLeague)
   }, [selectedDate, activeLeague])
 
-  const filteredGames = activeLeague === 'ALL'
+  const filteredGames = activeLeague === ('ALL' as League)
     ? games
     : games.filter(g => g.league === activeLeague)
 
@@ -105,18 +103,13 @@ export default function GamesPage() {
       <div className="max-w-7xl mx-auto">
         {/* 🔙 回主頁 */}
         <Link href="/" className="inline-flex items-center gap-2 text-stone-gray hover:text-shell-white transition-colors mb-8 text-sm">
-          <ArrowLeft className="w-4 h-4" /> 回到戰績首頁
+          ← 回到戰績首頁
         </Link>
 
         {/* 英雄區 */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
-        >
+        <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-ocean-wave to-coral mb-6 shadow-lg shadow-ocean-wave/20">
-            <Trophy className="w-10 h-10 text-white" />
+            <span className="text-4xl">⚾</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             <span className="text-gradient">今日賽程</span>
@@ -124,18 +117,13 @@ export default function GamesPage() {
           <p className="text-stone-gray max-w-xl mx-auto">
             選擇聯盟與日期，即時顯示 NPB · MLB · CPBL · KBO 賽程與賽果
           </p>
-        </motion.div>
+        </div>
 
         {/* 篩選列 */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-          className="flex flex-wrap items-center gap-3 mb-8 justify-center"
-        >
+        <div className="flex flex-wrap items-center gap-3 mb-8 justify-center">
           {/* 日期選擇 */}
           <div className="flex items-center gap-2 ocean-card px-4 py-2 rounded-xl border border-ocean-light/20 bg-ocean-mid/20">
-            <Calendar className="w-4 h-4 text-ocean-wave/60" />
+            <span className="text-sm">📅</span>
             <input
               type="date"
               value={selectedDate}
@@ -144,16 +132,8 @@ export default function GamesPage() {
             />
           </div>
 
-          {/* 聯盟切換 */}
+          {/* 聯盟切換 — 無全部 */}
           <div className="flex gap-1 ocean-card p-1 rounded-xl border border-ocean-light/20 bg-ocean-mid/20">
-            <button
-              onClick={() => setActiveLeague('ALL')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                activeLeague === 'ALL' ? 'bg-ocean-wave text-white shadow-sm' : 'text-stone-gray hover:text-shell-white'
-              }`}
-            >
-              全部
-            </button>
             {LEAGUES.map(lg => (
               <button
                 key={lg}
@@ -171,27 +151,23 @@ export default function GamesPage() {
             onClick={() => fetchGames(selectedDate, activeLeague)}
             className="ocean-card p-2 rounded-xl border border-ocean-light/20 bg-ocean-mid/20 text-stone-gray hover:text-shell-white transition-colors"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            <span className={`inline-block text-sm ${loading ? 'animate-spin' : ''}`}>↻</span>
           </button>
-        </motion.div>
+        </div>
 
         {/* 賽程內容 */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
-        >
+        <div>
           {loading ? (
             <div className="text-center py-20">
-              <RefreshCw className="w-8 h-8 text-ocean-wave/40 animate-spin mx-auto mb-4" />
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-ocean-wave border-t-transparent mx-auto mb-4" />
               <p className="text-stone-gray text-sm">載入賽程中...</p>
             </div>
           ) : Object.keys(grouped).length === 0 ? (
             <div className="text-center py-20">
-              <Calendar className="w-12 h-12 text-stone-gray/30 mx-auto mb-4" />
+              <span className="text-4xl block mb-4">📅</span>
               <p className="text-stone-gray text-lg mb-2">今日無賽程</p>
               <p className="text-stone-gray/50 text-sm">
-                {selectedDate} 沒有{activeLeague === 'ALL' ? '' : ` ${activeLeague} `}比賽
+                {selectedDate} 沒有 {activeLeague} 比賽
               </p>
             </div>
           ) : (
@@ -200,7 +176,7 @@ export default function GamesPage() {
                 <section key={league}>
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-ocean-wave to-ocean-surface flex items-center justify-center">
-                      <Trophy className="w-4 h-4 text-white" />
+                      <span className="text-sm">⚾</span>
                     </div>
                     <h2 className="text-xl font-bold text-gradient">{league}</h2>
                     <span className="text-xs text-stone-gray/50">{lgGames.length} 場</span>
@@ -222,10 +198,10 @@ export default function GamesPage() {
                             </div>
                             <div className="flex items-center gap-3 text-xs text-stone-gray/50">
                               <span className="flex items-center gap-1">
-                                <MapPin className="w-3 h-3" /> {game.stadium}
+                                <span className="text-xs">📍</span> {game.stadium}
                               </span>
                               <span className="flex items-center gap-1">
-                                <Clock className="w-3 h-3" /> {game.game_time || '未定'}
+                                <span className="text-xs">⏰</span> {game.game_time || '未定'}
                               </span>
                               {game.source && (
                                 <span className="hidden sm:inline text-stone-gray/35">{game.source}</span>
@@ -253,7 +229,7 @@ export default function GamesPage() {
               ))}
             </div>
           )}
-        </motion.div>
+        </div>
       </div>
     </div>
   )

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { getTeamDisplayName } from '@/lib/teamNames'
-import { unwrapApiData } from '@/lib/api-response'
+import { unwrapApiData, extractPlayers, extractNews } from '@/lib/api-response'
 import PlayerModal, { type Player, type NewsItem } from '@/components/PlayerModal'
 
 const LEAGUES = ['MLB', 'NPB', 'KBO'] as const
@@ -64,8 +64,8 @@ export default function OverseasPlayers() {
     fetch('/api/players')
       .then(r => r.json())
       .then(data => {
-        const body = unwrapApiData<any>(data)
-        setPlayers(body?.data?.players || body?.players || [])
+        const players = extractPlayers(data)
+        setPlayers(players)
         setLoading(false)
       })
       .catch(() => setLoading(false))
@@ -78,8 +78,8 @@ export default function OverseasPlayers() {
     fetch(`/api/news?player_id=${encodeURIComponent(selectedPlayer.player_id)}`)
       .then(r => r.json())
       .then(data => {
-        const body = unwrapApiData<any>(data)
-        setSelectedNews(body?.news || body?.items || body || [])
+        const news = extractNews(data)
+        setSelectedNews(news)
         setNewsLoading(false)
       })
       .catch(() => setNewsLoading(false))
