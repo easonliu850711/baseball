@@ -2,6 +2,22 @@
 
 import { extractMeta, extractStandingsBlocks } from '@/lib/api-response'
 
+// NPB 略稱 → 全名對照（API 回傳的是略稱）
+const npbFullNames: Record<string, string> = {
+  '阪神': '阪神虎',
+  '巨人': '讀賣巨人',
+  '養樂多': '東京養樂多燕子',
+  'DeNA': '橫濱DeNA海灣之星',
+  '廣島': '廣島東洋鯉魚',
+  '中日': '中日龍',
+  '西武': '埼玉西武獅',
+  '軟銀': '福岡軟銀鷹',
+  '歐力士': '歐力士猛牛',
+  '火腿': '北海道日本火腿鬥士',
+  '羅德': '千葉羅德海洋',
+  '樂天': '東北樂天金鷲',
+}
+
 export interface Team {
   rank: number
   name: string
@@ -138,7 +154,7 @@ function StandingsTableInner({ teams, compact = true }: { teams: Team[]; compact
                     </span>
                   </td>
                   <td className="max-w-[260px] truncate px-3 py-3 font-semibold text-shell-white">
-                    {team.name}
+                    {npbFullNames[team.name] || team.name}
                   </td>
                   <td className="px-3 py-3 text-center font-semibold text-emerald-400">{team.w}</td>
                   <td className="px-3 py-3 text-center font-semibold text-rose-400">{team.l}</td>
