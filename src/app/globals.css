@@ -35,6 +35,9 @@
     @apply bg-ocean-abyss text-shell-white;
     min-height: 100vh;
     overflow-x: hidden;
+    background:
+      radial-gradient(circle at top, rgba(108, 180, 228, 0.10), transparent 34rem),
+      linear-gradient(180deg, #0a1628 0%, #0f2240 52%, #0a1628 100%);
   }
 
   /* Remove overlays */
@@ -113,6 +116,13 @@
 
   .glow-text {
     text-shadow: 0 0 10px rgba(108, 180, 228, 0.3);
+  }
+
+  .text-gradient {
+    background: linear-gradient(135deg, var(--shell-white), var(--ocean-foam), var(--ocean-wave));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
 
   .ocean-divider {
