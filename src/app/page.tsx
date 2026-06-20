@@ -8,7 +8,7 @@ import StandingsTable from '@/components/StandingsTable'
 import HomeHighlights from '@/components/HomeHighlights'
 import PlayerSpotlightList from '@/components/PlayerSpotlightList'
 import NewsFeedList from '@/components/NewsFeedList'
-import { fetchStandingsData, type Team, type LeagueType } from '@/components/StandingsTable'
+import { fetchStandingsData, type Team, type LeagueType, type StandingsFetchResult } from '@/components/StandingsTable'
 
 type FetchState = 'idle' | 'loading' | 'loaded' | 'error'
 
@@ -21,7 +21,7 @@ const leagueLabel: Record<LeagueType, string> = {
 
 export default function Home() {
   const [activeLeague, setActiveLeague] = useState<LeagueType>('npb')
-  const [teams, setTeams] = useState<Team[]>([])
+  const [result, setResult] = useState<StandingsFetchResult | null>(null)
   const [fetchState, setFetchState] = useState<FetchState>('idle')
   const [loadError, setLoadError] = useState<string | null>(null)
 
@@ -29,12 +29,12 @@ export default function Home() {
     setFetchState('loading')
     setLoadError(null)
     try {
-      const result = await fetchStandingsData(league)
-      setTeams(result.teams || [])
+      const data = await fetchStandingsData(league)
+      setResult(data)
       setFetchState('loaded')
     } catch {
       setFetchState('error')
-      setTeams([])
+      setResult(null)
       setLoadError('戰績資料暫時無法讀取')
     }
   }, [])
@@ -86,8 +86,8 @@ export default function Home() {
                 </div>
               )}
 
-              {fetchState === 'loaded' && (
-                <StandingsTable teams={teams} compact />
+              {fetchState === 'loaded' && result && (
+                <StandingsTable teams={result.teams} compact blocks={result.blocks} />
               )}
             </div>
 

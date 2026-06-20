@@ -25,11 +25,27 @@ export type LeagueType = 'npb' | 'cpbl' | 'mlb' | 'kbo'
 
 export interface StandingsFetchResult {
   teams: Team[]
+  blocks?: { league?: string; icon?: string; teams: Team[] }[]
   meta: {
     source?: string
     snapshot?: string
     generatedAt?: string
   }
+}
+
+const NPB_DIVISIONS: Record<string, string> = {
+  NPB_CENTRAL: '中央聯盟',
+  NPB_PACIFIC: '太平洋聯盟',
+  NPB: '日本職棒',
+}
+
+const CPBL_DIVISIONS: Record<string, string> = {
+  CPBL: '中華職棒',
+}
+
+function getDivisionLabel(league: string | undefined): string {
+  if (!league) return ''
+  return NPB_DIVISIONS[league] || CPBL_DIVISIONS[league] || league
 }
 
 function normalizeTeam(row: any, fallbackRank: number): Team {
@@ -52,12 +68,17 @@ export async function fetchStandingsData(league: LeagueType): Promise<StandingsF
   if (!res.ok) throw new Error(`Standings fetch failed for ${league}`)
 
   const payload = await res.json()
-  const blocks = extractStandingsBlocks(payload) as LeagueBlock[]
-  const teams = blocks.flatMap((block) => (block.teams || []).map(normalizeTeam))
+  const rawBlocks = extractStandingsBlocks(payload) as LeagueBlock[]
+  const blocks = rawBlocks.map((block, i) => ({
+    league: block.league || `block-${i}`,
+    icon: block.icon,
+    teams: (block.teams || []).map((t, ri) => normalizeTeam(t, ri)),
+  }))
   const meta = extractMeta(payload)
 
   return {
-    teams,
+    teams: blocks.flatMap(b => b.teams),
+    blocks: blocks.length > 1 ? blocks : undefined,
     meta: {
       source: meta.source || 'unknown',
       snapshot: meta.snapshot_date || meta.last_updated || '',
@@ -73,9 +94,10 @@ export async function fetchStandings(league: LeagueType): Promise<Team[]> {
 interface StandingsTableProps {
   teams: Team[]
   compact?: boolean
+  blocks?: { league?: string; icon?: string; teams: Team[] }[]
 }
 
-export default function StandingsTable({ teams, compact = true }: StandingsTableProps) {
+function StandingsTableInner({ teams, compact = true }: { teams: Team[]; compact?: boolean }) {
   if (!teams || teams.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-ocean-light/10 bg-ocean-mid/20 py-10 text-center text-sm text-stone-gray/50">
@@ -132,4 +154,35 @@ export default function StandingsTable({ teams, compact = true }: StandingsTable
       </div>
     </div>
   )
+}
+
+export default function StandingsTable({ teams, compact = true, blocks }: StandingsTableProps) {
+  // When blocks are provided (multiple divisions like NPB Central + Pacific), render each separately
+  if (blocks && blocks.length > 0) {
+    // Check if there's more than one distinct league name (excluding block-N numeric names)
+    const namedBlocks = blocks.filter(b => b.league && !b.league.startsWith('block-'))
+    const showDivisionHeaders = namedBlocks.length > 1
+
+    return (
+      <div className="space-y-5">
+        {blocks.map((block, i) => {
+          const label = getDivisionLabel(block.league)
+          return (
+            <div key={block.league || i}>
+              {showDivisionHeaders && label && (
+                <div className="mb-2 flex items-center gap-2 px-1">
+                  {block.icon && <span className="text-lg">{block.icon}</span>}
+                  <h3 className="text-sm font-bold tracking-wider text-shell-white/80">{label}</h3>
+                </div>
+              )}
+              <StandingsTableInner teams={block.teams || []} compact={compact} />
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
+  // Single block (MLB, KBO, or flat data): render as-is
+  return <StandingsTableInner teams={teams} compact={compact} />
 }

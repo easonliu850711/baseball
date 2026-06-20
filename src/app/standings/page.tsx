@@ -2,24 +2,24 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import StandingsTable, { fetchStandings, type Team, type LeagueType } from '@/components/StandingsTable'
+import StandingsTable, { fetchStandingsData, type Team, type LeagueType, type StandingsFetchResult } from '@/components/StandingsTable'
 import LeagueTabs from '@/components/LeagueTabs'
 import DataStatus from '@/components/DataStatus'
 
 export default function StandingsPage() {
   const [activeLeague, setActiveLeague] = useState<LeagueType>('npb')
-  const [teams, setTeams] = useState<Team[]>([])
+  const [result, setResult] = useState<StandingsFetchResult | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     setLoading(true)
-    fetchStandings(activeLeague)
+    fetchStandingsData(activeLeague)
       .then((data) => {
-        setTeams(data)
+        setResult(data)
         setLoading(false)
       })
       .catch(() => {
-        setTeams([])
+        setResult(null)
         setLoading(false)
       })
   }, [activeLeague])
@@ -49,7 +49,7 @@ export default function StandingsPage() {
           </div>
         ) : (
           <div className="rounded-xl border border-ocean-light/10 bg-ocean-mid/20 p-4 sm:p-6">
-            <StandingsTable teams={teams} compact={false} />
+            {result && <StandingsTable teams={result.teams} compact={false} blocks={result.blocks} />}
           </div>
         )}
       </div>
