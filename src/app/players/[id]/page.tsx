@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { ArrowLeft, Globe, Loader2, AlertCircle, User, Shield, Building2, Flame, ExternalLink, Newspaper, Clock } from 'lucide-react'
+import { getTeamDisplayName } from '@/lib/teamNames'
 import { unwrapApiData } from '@/lib/api-response'
 
 type NewsItem = {
@@ -154,7 +155,7 @@ export default function PlayerProfile() {
                 </div>
                 <p className="text-stone-gray/60 text-sm flex items-center gap-2 justify-center md:justify-start">
                   <Building2 className="w-4 h-4" />
-                  {player.organization}{player.team_name !== player.organization ? ` · ${player.team_name}` : ''}
+                  {getTeamDisplayName(player.organization)}{player.team_name !== player.organization ? ` · ${getTeamDisplayName(player.team_name)}` : ''}
                 </p>
               </div>
 
@@ -222,7 +223,7 @@ export default function PlayerProfile() {
               { label: '守備位置', value: player.position, icon: '🎯' },
               { label: '投打習慣', value: player.bats_throws, icon: '🔄' },
               { label: '所屬聯盟', value: player.league, icon: '🏆' },
-              { label: '所屬球隊', value: player.team_name, icon: '🏟️' },
+              { label: '所屬球隊', value: getTeamDisplayName(player.team_name), icon: '🏟️' },
               { label: '球團組織', value: player.organization, icon: '🏛️' },
               { label: '國籍', value: `${country.flag} ${country.label}`, icon: '🌍' },
               { label: '當前層級', value: player.current_level, icon: '📊' },

@@ -1,3 +1,5 @@
+import { getTeamDisplayName } from '@/lib/teamNames'
+
 export interface Player {
   player_id: string
   name_zh: string
@@ -88,7 +90,7 @@ export default function PlayerModal({ player, news, newsLoading, onClose }: Play
               { label: '守備位置', value: player.position || '-' },
               { label: '投打習慣', value: player.bats_throws || '-' },
               { label: '所屬聯盟', value: player.league || '-' },
-              { label: '所屬球隊', value: player.team_name || player.organization || '-' },
+              { label: '所屬球隊', value: getTeamDisplayName(player.team_name || player.organization) || '-' },
               { label: '球團組織', value: player.organization || '-' },
               { label: '當前層級', value: player.current_level || '-' },
               { label: '狀態', value: player.roster_status || '-' },
