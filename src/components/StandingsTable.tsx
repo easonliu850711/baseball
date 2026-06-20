@@ -1,7 +1,6 @@
 'use client'
 
 import { extractMeta, extractStandingsBlocks } from '@/lib/api-response'
-import { getTeamDisplayName } from '@/lib/teamNames'
 
 export interface Team {
   rank: number
@@ -139,7 +138,7 @@ function StandingsTableInner({ teams, compact = true }: { teams: Team[]; compact
                     </span>
                   </td>
                   <td className="max-w-[260px] truncate px-3 py-3 font-semibold text-shell-white">
-                    {getTeamDisplayName(team.name)}
+                    {team.name}
                   </td>
                   <td className="px-3 py-3 text-center font-semibold text-emerald-400">{team.w}</td>
                   <td className="px-3 py-3 text-center font-semibold text-rose-400">{team.l}</td>
