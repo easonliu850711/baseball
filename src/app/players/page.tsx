@@ -166,7 +166,7 @@ export default function OverseasPlayers() {
                             </div>
                             <p className="text-[11px] text-stone-gray/60 mb-1.5">{player.position} · {player.bats_throws}</p>
                             <div className="flex flex-wrap gap-1.5">
-                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-ocean-light/15 text-ocean-foam">{player.organization}</span>
+                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-ocean-light/15 text-ocean-foam">{getTeamDisplayName(player.team_name)}</span>
                               <span className={`text-[10px] px-2 py-0.5 rounded-full ${getLevelColor(player.current_level)}`}>{player.current_level}</span>
                             </div>
                           </div>
