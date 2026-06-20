@@ -59,10 +59,8 @@ export default function Home() {
             <div className="border-b border-ocean-light/10 px-4 py-4 sm:px-6">
               <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-ocean-foam/45">Standings Board</div>
-                  <h2 className="mt-1 text-lg font-black tracking-wide text-shell-white">{leagueLabel[activeLeague]}排行榜</h2>
+                  <h2 className="text-lg font-black tracking-wide text-shell-white">{leagueLabel[activeLeague]}排行榜</h2>
                 </div>
-                <p className="text-[12px] text-stone-gray/55">以 API Core DB-first 資料源呈現最新戰績</p>
               </div>
               <LeagueTabs active={activeLeague} onChange={setActiveLeague} />
             </div>

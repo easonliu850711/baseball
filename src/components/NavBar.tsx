@@ -26,9 +26,6 @@ export default function NavBar() {
                 <div className="truncate text-[15px] font-bold tracking-[0.04em] text-shell-white group-hover:text-ocean-foam sm:text-base">
                   伊森の国際野球航路
                 </div>
-                <div className="mt-1 truncate text-[10px] font-semibold uppercase tracking-[0.24em] text-ocean-foam/55">
-                  Studio Imori Baseball
-                </div>
               </div>
             </div>
           </Link>

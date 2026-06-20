@@ -5,7 +5,7 @@ import VisitorCounter from '@/components/VisitorCounter'
 
 export const metadata: Metadata = {
   title: '伊森の国際野球航路 | Studio Imori Baseball',
-  description: '台灣旅外球員情報中樞，整合 NPB・MLB・CPBL・KBO 戰績、賽程與球員動態。',
+  description: '追蹤台灣旅外球員，整合 NPB、MLB、CPBL、KBO 戰績與最新動態。',
   icons: '/icon.png',
 }
 
@@ -27,8 +27,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <span>·</span>
             <VisitorCounter />
           </div>
-          <p className="mt-2 text-[10px] tracking-[0.16em] text-white/20">
-            NPB · MLB · CPBL · KBO · Taiwan Overseas Baseball Intelligence
+          <p className="mt-2 text-[10px] tracking-[0.12em] text-white/20">
+            NPB · MLB · CPBL · KBO 戰績與台灣旅外球員動態
           </p>
         </footer>
       </body>
