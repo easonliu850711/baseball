@@ -14,20 +14,20 @@
     "@notionhq/client": "^1.0.4",
     "autoprefixer": "^10.4.27",
     "framer-motion": "^11.18.0",
-    "lucide-react": "^0.309.0",
-    "next": "^14.2.5",
+    "lucide-react": "0.468.0",
+    "next": "15.5.29",
     "next-themes": "^0.4.6",
-    "postcss": "^8.5.8",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "postcss": "8.5.33",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
     "tailwindcss": "^3.4.19"
   },
   "devDependencies": {
     "@types/node": "^20.19.39",
-    "@types/react": "18.3.28",
-    "@types/react-dom": "^18.3.7",
-    "eslint": "^8",
-    "eslint-config-next": "14.2.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.2.3",
+    "eslint": "8.57.1",
+    "eslint-config-next": "15.5.29",
     "typescript": "5.9.3"
   },
   "keywords": [
@@ -45,5 +45,10 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/easonliu850711/baseball.studio-imori.git"
+  },
+  "overrides": {
+    "postcss": "8.5.33",
+    "nanoid": "3.3.20",
+    "source-map-js": "1.2.4"
   }
 }

@@ -6,10 +6,7 @@ function getCentralApiBaseUrl(): string {
 
   if (configured) return configured.replace(/\/$/, '')
 
-  // Safe local fallback for Studio Imori server deployment.
-  // STG baseball normally listens on 4004, PROD baseball on 3004.
-  const port = process.env.PORT || ''
-  return port.startsWith('4') ? 'http://127.0.0.1:4005' : 'http://127.0.0.1:3005'
+  return ''
 }
 
 function getCentralApiKey(): string {
@@ -17,12 +14,19 @@ function getCentralApiKey(): string {
     process.env.CENTRAL_API_KEY ||
     process.env.X_IMORI_API_KEY ||
     process.env.IMORI_API_KEY ||
-    'imori-api-key-202606'
+    ''
   )
 }
 
 function buildCentralUrl(pathname: string, request?: Request): string {
   const base = getCentralApiBaseUrl()
+  if (!base || !getCentralApiKey()) throw new Error('Central API configuration is unavailable')
+  const origin = new URL(base)
+  if (!['http:', 'https:'].includes(origin.protocol) || origin.username || origin.password ||
+      origin.search || origin.hash || origin.pathname !== '/') throw new Error('Invalid Central API origin')
+  if (!pathname.startsWith('/api/') || pathname.includes('..') || pathname.includes('\\')) {
+    throw new Error('Invalid Central API path')
+  }
   const path = pathname.startsWith('/') ? pathname : `/${pathname}`
   const url = new URL(`${base}${path}`)
 
@@ -42,12 +46,12 @@ function buildForwardHeaders(requestHeaders?: HeadersInit): Headers {
   headers.delete('content-length')
   headers.delete('connection')
   headers.delete('accept-encoding')
+  headers.delete('cookie')
+  headers.delete('authorization')
 
   // Browser callers of baseball.studio-imori.com do not know the internal key.
   // The facade route must inject it server-side before calling api-core.
-  if (!headers.has('x-imori-api-key')) {
-    headers.set('x-imori-api-key', getCentralApiKey())
-  }
+  headers.set('x-imori-api-key', getCentralApiKey())
 
   return headers
 }
@@ -57,22 +61,31 @@ export async function proxyCentralApi(
   pathname: string,
   init?: RequestInit,
 ): Promise<Response> {
+  let url: string
+  try { url = buildCentralUrl(pathname, request) }
+  catch {
+    return Response.json({ success: false, error: { code: 'SERVICE_UNAVAILABLE', message: '中央 API 設定尚未就緒' } },
+      { status: 503, headers: { 'cache-control': 'no-store' } })
+  }
   const headers = buildForwardHeaders(init?.headers || request.headers)
   const method = init?.method || request.method
   const hasBody = !['GET', 'HEAD'].includes(method.toUpperCase())
 
-  const response = await fetch(buildCentralUrl(pathname, request), {
+  const response = await fetch(url, {
     ...init,
     method,
     headers,
     body: hasBody ? await request.text() : undefined,
     cache: 'no-store',
+    redirect: 'error',
+    signal: AbortSignal.timeout(10000),
   })
 
   const responseHeaders = new Headers(response.headers)
+  responseHeaders.delete('set-cookie')
   responseHeaders.set('Cache-Control', 'no-store, max-age=0')
 
-  return new Response(await response.arrayBuffer(), {
+  return new Response(['HEAD'].includes(method.toUpperCase()) || [204, 205, 304].includes(response.status) ? null : await response.arrayBuffer(), {
     status: response.status,
     statusText: response.statusText,
     headers: responseHeaders,
@@ -87,6 +100,8 @@ export async function fetchCentralApi<T>(
     ...init,
     headers: buildForwardHeaders(init?.headers),
     cache: 'no-store',
+    redirect: 'error',
+    signal: AbortSignal.timeout(10000),
   })
 
   if (!response.ok) {

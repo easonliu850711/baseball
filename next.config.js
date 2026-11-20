@@ -3,8 +3,8 @@ const path = require('path')
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone', 
+  outputFileTracingRoot: __dirname,
   reactStrictMode: true,
-  swcMinify: true,
   images: {
     domains: [],
     formats: ['image/avif', 'image/webp'],
